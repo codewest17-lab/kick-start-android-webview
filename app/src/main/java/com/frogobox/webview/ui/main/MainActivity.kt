@@ -72,7 +72,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
     private fun setupLoadWeb() {
         binding.apply {
-            mainWebview.loadUrlExt(url = URL_WEB, callback = object : WebViewCallback {
+            mainWebview.loadUrlExt(url = "file:///android_asset/assets/index.html", callback = object : WebView...
 
                 override fun onShowProgress() {
                     containerProgressView.progressView.visible()
