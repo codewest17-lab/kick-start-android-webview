@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>FitHer - Workout for Women</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/poppins@5.0.8/index.css">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<style>
+*{font-family:'Poppins',sans-serif;margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+body{background:#000;overflow:hidden}
+.app-container{max-width:430px;margin:0 auto;height:100vh;position:relative;overflow:hidden;background:#fff}
+.material-icons{font-family:'Material Icons';font-size:24px;display:inline-block;line-height:1}
+
+/* Splash */
+.splash-carousel{position:fixed;inset:0;z-index:9999;background:#fff;display:flex;flex-direction:column}
+.splash-carousel.hidden{display:none}
+.splash-slides{flex:1;position:relative;overflow:hidden}
+.splash-slide{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;opacity:0;transform:translateX(100%);transition:all 0.5s cubic-bezier(0.4,0,0.2,1)}
+.splash-slide.active{opacity:1;transform:translateX(0)}
+.splash-slide.prev{opacity:0;transform:translateX(-100%)}
+.splash-slide img{width:100%;max-height:55vh;object-fit:contain;border-radius:20px;margin-bottom:24px}
+.splash-title{font-size:36px;font-weight:900;color:#1a1a1a;line-height:1.1;text-align:center;margin-bottom:12px}
+.splash-subtitle{font-size:16px;color:#666;text-align:center;line-height:1.5}
+.splash-dots{display:flex;gap:8px;justify-content:center;padding:20px 0}
+.splash-dot{width:8px;height:8px;border-radius:50%;background:#ddd;transition:all 0.3s;cursor:pointer}
+.splash-dot.active{width:24px;border-radius:4px;background:#FF4D8D}
+.splash-actions{padding:0 24px 40px;display:flex;gap:12px}
+.splash-btn{flex:1;padding:16px;border-radius:16px;font-weight:700;font-size:16px;cursor:pointer;transition:all 0.2s;border:none}
+.splash-btn:active{transform:scale(0.97)}
+.splash-btn-skip{background:#f0f0f0;color:#666}
+.splash-btn-next{background:linear-gradient(135deg,#FF4D8D,#FF8A65);color:#fff;box-shadow:0 8px 20px rgba(255,77,141,0.4)}
+
+/* Screens */
+.screen{position:absolute;top:52px;left:0;width:100%;height:calc(100% - 122px);overflow-y:auto;overflow-x:hidden;transition:transform 0.35s cubic-bezier(0.4,0,0.2,1),opacity 0.35s ease;-webkit-overflow-scrolling:touch;will-change:transform}
+.screen::-webkit-scrollbar{width:0}
+.screen.hidden-screen{transform:translateX(100%);opacity:0;pointer-events:none;position:absolute}
+.screen.active-screen{transform:translateX(0);opacity:1}
+.bottom-nav{position:absolute;bottom:0;left:0;width:100%;height:70px;background:#fff;display:flex;justify-content:space-around;align-items:center;border-top:1px solid #f0f0f0;z-index:100}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 12px;transition:all 0.3s}
+.nav-item.active .nav-icon{color:#FF4D8D;transform:scale(1.1)}
+.nav-item.active .nav-label{color:#FF4D8D;font-weight:600}
+.nav-icon{color:#999;transition:all 0.3s}
+.nav-label{color:#999;font-size:10px;transition:all 0.3s}
+.status-bar{position:absolute;top:0;left:0;width:100%;height:52px;background:#fff;z-index:110;display:flex;align-items:flex-end;justify-content:space-between;padding:0 20px 8px}
+
+/* Animations */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(0.3)}to{opacity:1;transform:scale(1)}}
+@keyframes confetti-fall{0%{transform:translateY(-10vh) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+@keyframes count-pop{0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1)}}
+@keyframes flame{0%,100%{transform:scale(1) rotate(-3deg)}50%{transform:scale(1.15) rotate(3deg)}}
+@keyframes glow{0%,100%{box-shadow:0 0 20px rgba(255,77,141,0.4)}50%{box-shadow:0 0 40px rgba(255,77,141,0.8)}}
+@keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.2)}28%{transform:scale(1)}42%{transform:scale(1.2)}70%{transform:scale(1)}}
+@keyframes checkPop{0%{transform:scale(0) rotate(-45deg)}50%{transform:scale(1.3) rotate(0deg)}100%{transform:scale(1) rotate(0deg)}}
+@keyframes ripple{0%{transform:scale(0);opacity:0.6}100%{transform:scale(4);opacity:0}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes slideInRight{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
+@keyframes voice-wave{0%,100%{height:8px}50%{height:20px}}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:0.7}50%{transform:scale(1.1);opacity:1}}
+@keyframes pulse-ring{0%{transform:scale(1);opacity:1}100%{transform:scale(1.5);opacity:0}}
+
+/* Flying gifts celebration */
+@keyframes gift-fly{0%{transform:translate(0,0) rotate(0deg) scale(0);opacity:0}20%{transform:translate(var(--tx1),var(--ty1)) rotate(180deg) scale(1.2);opacity:1}100%{transform:translate(var(--tx2),var(--ty2)) rotate(720deg) scale(0.3);opacity:0}}
+@keyframes trophy-bounce{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-20px) rotate(5deg)}}
+@keyframes congrats-pop{0%{transform:scale(0) rotate(-10deg);opacity:0}60%{transform:scale(1.2) rotate(5deg);opacity:1}100%{transform:scale(1) rotate(0deg);opacity:1}}
+@keyframes star-burst{0%{transform:scale(0) rotate(0deg);opacity:1}100%{transform:scale(2) rotate(180deg);opacity:0}}
+@keyframes hurray-text{0%{transform:translateY(50px) scale(0.5);opacity:0}60%{transform:translateY(-10px) scale(1.1);opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}
+
+.flying-gift{position:fixed;font-size:40px;pointer-events:none;z-index:600;animation:gift-fly 2.5s cubic-bezier(0.25,0.46,0.45,0.94) forwards}
+.trophy-anim{animation:trophy-bounce 1.5s ease-in-out infinite}
+.congrats-pop{animation:congrats-pop 0.8s cubic-bezier(0.34,1.56,0.64,1) forwards}
+.hurray-text{animation:hurray-text 0.8s cubic-bezier(0.34,1.56,0.64,1) forwards}
+
+/* Coach 3D animations */
+.coach-stage-3d{width:220px;height:300px;position:relative;perspective:800px}
+.coach-3d{width:100%;height:100%;position:relative;transform-style:preserve-3d}
+
+@keyframes jj-body{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+@keyframes jj-arm-l{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-150deg)}}
+@keyframes jj-arm-r{0%,100%{transform:rotate(0deg)}50%{transform:rotate(150deg)}}
+@keyframes jj-leg-l{0%,100%{transform:rotate(0deg)}50%{transform:rotate(20deg)}}
+@keyframes jj-leg-r{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-20deg)}}
+.anim-jumping .jj-body{animation:jj-body 0.6s ease-in-out infinite}
+.anim-jumping .jj-arm-l{animation:jj-arm-l 0.6s ease-in-out infinite;transform-origin:120px 110px}
+.anim-jumping .jj-arm-r{animation:jj-arm-r 0.6s ease-in-out infinite;transform-origin:120px 110px}
+.anim-jumping .jj-leg-l{animation:jj-leg-l 0.6s ease-in-out infinite;transform-origin:120px 200px}
+.anim-jumping .jj-leg-r{animation:jj-leg-r 0.6s ease-in-out infinite;transform-origin:120px 200px}
+
+@keyframes sq-body{0%,100%{transform:translateY(0)}50%{transform:translateY(35px)}}
+@keyframes sq-knee{0%,100%{transform:rotate(0deg)}50%{transform:rotate(55deg)}}
+@keyframes sq-arm{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-25deg)}}
+.anim-squat .sq-body{animation:sq-body 1.4s ease-in-out infinite}
+.anim-squat .sq-knee-l{animation:sq-knee 1.4s ease-in-out infinite;transform-origin:120px 200px}
+.anim-squat .sq-knee-r{animation:sq-knee 1.4s ease-in-out infinite;transform-origin:120px 200px}
+.anim-squat .sq-arm-l{animation:sq-arm 1.4s ease-in-out infinite;transform-origin:120px 110px}
+.anim-squat .sq-arm-r{animation:sq-arm 1.4s ease-in-out infinite;transform-origin:120px 110px}
+
+@keyframes pu-body{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(18px) rotate(-3deg)}}
+@keyframes pu-arm{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-35deg)}}
+.anim-pushup .pu-body{animation:pu-body 1.5s ease-in-out infinite;transform-origin:120px 220px}
+.anim-pushup .pu-arm-l{animation:pu-arm 1.5s ease-in-out infinite;transform-origin:100px 170px}
+.anim-pushup .pu-arm-r{animation:pu-arm 1.5s ease-in-out infinite;transform-origin:140px 170px}
+
+@keyframes pl-core{0%,100%{transform:translateY(0)}25%{transform:translateY(-2px)}75%{transform:translateY(2px)}}
+@keyframes pl-shake{0%,100%{transform:rotate(0deg)}50%{transform:rotate(0.8deg)}}
+.anim-plank .pl-core{animation:pl-core 2s ease-in-out infinite}
+.anim-plank .pl-shake{animation:pl-shake 0.4s ease-in-out infinite}
+
+@keyframes lu-step{0%,100%{transform:translateX(0)}50%{transform:translateX(18px)}}
+@keyframes lu-knee{0%,100%{transform:rotate(0deg)}50%{transform:rotate(55deg)}}
+@keyframes lu-back{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-35deg)}}
+.anim-lunge .lu-step{animation:lu-step 1.8s ease-in-out infinite}
+.anim-lunge .lu-knee{animation:lu-knee 1.8s ease-in-out infinite;transform-origin:120px 200px}
+.anim-lunge .lu-back{animation:lu-back 1.8s ease-in-out infinite;transform-origin:120px 200px}
+
+@keyframes cb-rise{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-25px) rotate(-30deg)}}
+@keyframes cb-arm{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-45deg)}}
+.anim-cobra .cb-rise{animation:cb-rise 2.8s ease-in-out infinite;transform-origin:120px 220px}
+.anim-cobra .cb-arm-l{animation:cb-arm 2.8s ease-in-out infinite;transform-origin:100px 210px}
+.anim-cobra .cb-arm-r{animation:cb-arm 2.8s ease-in-out infinite;transform-origin:140px 210px}
+
+@keyframes bl-curl{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-15px) rotate(-20deg)}}
+.anim-belly .bl-curl{animation:bl-curl 1.6s ease-in-out infinite;transform-origin:120px 220px}
+
+@keyframes hp-rotate{0%,100%{transform:rotate(0deg)}25%{transform:rotate(20deg)}75%{transform:rotate(-20deg)}}
+@keyframes hp-lift{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+.anim-hip .hp-rotate{animation:hp-rotate 2.2s ease-in-out infinite;transform-origin:120px 180px}
+.anim-hip .hp-lift{animation:hp-lift 1.6s ease-in-out infinite}
+
+@keyframes bt-bridge{0%,100%{transform:translateY(0)}50%{transform:translateY(-28px)}}
+@keyframes bt-squeeze{0%,100%{transform:scaleX(1)}50%{transform:scaleX(1.08)}}
+.anim-butt .bt-bridge{animation:bt-bridge 2s ease-in-out infinite}
+.anim-butt .bt-squeeze{animation:bt-squeeze 2s ease-in-out infinite;transform-origin:center}
+
+.animate-in{animation:fadeInUp 0.5s ease forwards}
+.delay-1{animation-delay:0.1s;opacity:0}
+.delay-2{animation-delay:0.2s;opacity:0}
+.delay-3{animation-delay:0.3s;opacity:0}
+.delay-4{animation-delay:0.4s;opacity:0}
+
+.workout-card{border-radius:20px;overflow:hidden;position:relative;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s}
+.workout-card:active{transform:scale(0.97)}
+.workout-card img{width:100%;height:100%;object-fit:cover}
+.workout-card .overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.75) 0%,transparent 60%)}
+
+.tab-pill{padding:8px 18px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.3s;white-space:nowrap}
+.tab-pill.active{background:#FF4D8D;color:#fff;box-shadow:0 4px 12px rgba(255,77,141,0.3)}
+.tab-pill:not(.active){background:#f0f0f0;color:#666}
+.tab-pill:active{transform:scale(0.95)}
+
+.day-card{background:#fff;border-radius:14px;padding:10px 6px;text-align:center;cursor:pointer;transition:all 0.3s;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.day-card:active{transform:scale(0.93)}
+.day-card.completed{background:#FF4D8D}
+.day-card.completed .day-num{color:#fff}
+.day-card.today{background:#fff;border:2px solid #FF4D8D}
+
+.stat-card{background:#f8f9ff;border-radius:16px;padding:14px;text-align:center;transition:transform 0.2s}
+.stat-card:active{transform:scale(0.96)}
+.chart-container{position:relative;height:200px}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.show{display:flex}
+.modal-content{background:white;border-radius:30px 30px 0 0;width:100%;max-width:430px;max-height:85vh;overflow-y:auto;padding:24px;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1)}
+.modal-overlay.show .modal-content{transform:translateY(0)}
+
+.workout-overlay{position:fixed;inset:0;background:linear-gradient(180deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);z-index:300;display:none;flex-direction:column;overflow:hidden}
+.workout-overlay.show{display:flex}
+
+.rest-overlay{position:fixed;inset:0;background:rgba(10,10,30,0.95);z-index:400;display:none;flex-direction:column;align-items:center;justify-content:center;color:white;backdrop-filter:blur(10px)}
+.rest-overlay.show{display:flex}
+
+.confetti-piece{position:fixed;top:-20px;animation:confetti-fall 3s ease-in forwards;z-index:500;pointer-events:none}
+
+.rep-btn{width:140px;height:140px;border-radius:50%;background:linear-gradient(135deg,#FF4D8D,#FF8A65);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-weight:bold;cursor:pointer;transition:transform 0.1s;box-shadow:0 8px 30px rgba(255,77,141,0.5);position:relative;overflow:hidden}
+.rep-btn:active{transform:scale(0.92)}
+.rep-btn .rep-count{font-size:42px;line-height:1;font-weight:800}
+.rep-btn .rep-label{font-size:11px;opacity:0.9;margin-top:2px}
+.rep-btn .ripple-effect{position:absolute;border-radius:50%;background:rgba(255,255,255,0.5);transform:scale(0);animation:ripple 0.6s ease-out;pointer-events:none}
+
+.glow-btn{animation:glow 2s ease-in-out infinite}
+.flame-anim{animation:flame 1s ease-in-out infinite;display:inline-block}
+.heartbeat{animation:heartbeat 1.5s ease-in-out infinite;display:inline-block}
+.scrollbar-hide::-webkit-scrollbar{display:none}
+.scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none}
+
+.toggle-switch{width:44px;height:24px;background:#e0e0e0;border-radius:12px;position:relative;cursor:pointer;transition:background 0.3s;flex-shrink:0}
+.toggle-switch.on{background:#FF4D8D}
+.toggle-switch::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;background:white;border-radius:50%;transition:transform 0.3s;box-shadow:0 2px 4px rgba(0,0,0,0.2)}
+.toggle-switch.on::after{transform:translateX(20px)}
+
+.exercise-enter{animation:slideInRight 0.4s ease}
+.progress-ring{transition:stroke-dashoffset 1s linear;transform:rotate(-90deg);transform-origin:50% 50%}
+.gauge-container{position:relative;width:180px;height:110px}
+.btn-ripple{position:relative;overflow:hidden}
+.week-bar{transition:height 0.5s ease}
+
+.coach-option{border:3px solid transparent;border-radius:20px;overflow:hidden;cursor:pointer;transition:all 0.3s;position:relative}
+.coach-option.selected{border-color:#FF4D8D;box-shadow:0 8px 25px rgba(255,77,141,0.4)}
+.coach-option.selected::after{content:'✓';position:absolute;top:8px;right:8px;width:28px;height:28px;background:#FF4D8D;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:16px}
+
+.voice-indicator{display:flex;align-items:center;gap:3px;height:24px}
+.voice-bar{width:3px;background:#FF4D8D;border-radius:2px;animation:voice-wave 0.8s ease-in-out infinite}
+.voice-bar:nth-child(1){animation-delay:0s;height:8px}
+.voice-bar:nth-child(2){animation-delay:0.1s;height:14px}
+.voice-bar:nth-child(3){animation-delay:0.2s;height:20px}
+.voice-bar:nth-child(4){animation-delay:0.3s;height:14px}
+.voice-bar:nth-child(5){animation-delay:0.4s;height:8px}
+
+.speech-bubble{position:relative;background:white;border-radius:16px;padding:12px 16px;box-shadow:0 4px 15px rgba(0,0,0,0.1);max-width:280px}
+.speech-bubble::after{content:'';position:absolute;bottom:-8px;left:30px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid white}
+
+.cancel-btn{position:relative;overflow:hidden}
+.cancel-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(239,68,68,0.3),rgba(239,68,68,0.15));opacity:0;transition:opacity 0.3s}
+.cancel-btn:active::before{opacity:1}
+
+.instruction-step{display:flex;gap:12px;padding:10px;background:rgba(255,255,255,0.05);border-radius:12px;margin-bottom:6px;border-left:3px solid #FF4D8D}
+.instruction-step .step-num{width:26px;height:26px;background:#FF4D8D;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px;flex-shrink:0}
+.instruction-step .step-text{color:white;font-size:12px;line-height:1.5}
+
+.coach-glow{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(255,77,141,0.25) 0%,rgba(255,77,141,0.08) 50%,transparent 70%);animation:breathe 3s ease-in-out infinite}
+.coach-floor{position:absolute;bottom:15px;left:50%;transform:translateX(-50%);width:180px;height:6px;background:linear-gradient(90deg,transparent,rgba(255,77,141,0.5),transparent);border-radius:3px}
+
+.timer-big{font-variant-numeric:tabular-nums;font-weight:800}
+.workout-item{transition:all 0.3s}
+.workout-item:active{transform:scale(0.98)}
+
+/* Celebration overlay */
+.celebration-overlay{position:fixed;inset:0;z-index:700;display:none;align-items:center;justify-content:center;flex-direction:column;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px)}
+.celebration-overlay.show{display:flex}
+.celebration-content{text-align:center;padding:40px}
+.celebration-trophy{font-size:100px;margin-bottom:20px}
+.celebration-title{font-size:48px;font-weight:900;color:#FFD700;text-shadow:0 4px 20px rgba(255,215,0,0.5);margin-bottom:10px}
+.celebration-subtitle{font-size:24px;color:white;font-weight:600;margin-bottom:30px}
+.celebration-stats{display:flex;gap:20px;justify-content:center;margin-bottom:30px;flex-wrap:wrap}
+.celebration-stat{background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);border-radius:16px;padding:16px 24px;min-width:100px}
+.celebration-stat-value{font-size:28px;font-weight:800;color:#FFD700}
+.celebration-stat-label{font-size:12px;color:white/80;color:rgba(255,255,255,0.8)}
+.celebration-btn{background:linear-gradient(135deg,#FFD700,#FFA500);color:#333;font-weight:700;padding:16px 40px;border-radius:16px;border:none;font-size:16px;cursor:pointer;box-shadow:0 8px 25px rgba(255,215,0,0.4);transition:transform 0.2s}
+.celebration-btn:active{transform:scale(0.95)}
+
+/* Date badge */
+.date-badge{background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="app-container" id="app">
+
+  <!-- SPLASH CAROUSEL -->
+  <div class="splash-carousel" id="splashCarousel">
+    <div class="flex justify-end p-4">
+      <button class="text-gray-500 font-semibold text-sm px-4 py-2 rounded-full bg-gray-100 active:scale-95 transition" onclick="skipSplash()">Skip</button>
+    </div>
+    <div class="splash-slides" id="splashSlides">
+      <div class="splash-slide active" data-slide="0">
+        <img src="https://image.qwenlm.ai/public_source/e6660a4f-5544-42d5-9c1c-b07e7f8e6f05/1fdcde7e7-5116-4eaf-a9ad-6577e71b4181.png" alt="30-Day Weight Loss">
+        <div class="splash-title">30-Day Weight Loss</div>
+        <div class="splash-subtitle">Personalized plans for everyone. Target belly, butt, and legs with expert guidance.</div>
+      </div>
+      <div class="splash-slide" data-slide="1">
+        <img src="https://image.qwenlm.ai/public_source/e6660a4f-5544-42d5-9c1c-b07e7f8e6f05/1cfa58a6a-358e-439e-a1b6-3c3349c48ee6.png" alt="No Equipment">
+        <div class="splash-title">No Equipment</div>
+        <div class="splash-subtitle">Just your bodyweight and incredible results. Train anywhere, anytime.</div>
+      </div>
+      <div class="splash-slide" data-slide="2">
+        <img src="https://image.qwenlm.ai/public_source/e6660a4f-5544-42d5-9c1c-b07e7f8e6f05/19c60d4e0-aa26-4d18-9482-c33220744821.png" alt="Lazy & Chill">
+        <div class="splash-title">Lazy & Chill Workouts</div>
+        <div class="splash-subtitle">Train at home comfortably with no stress. Perfect for busy schedules.</div>
+      </div>
+      <div class="splash-slide" data-slide="3">
+        <img src="https://image.qwenlm.ai/public_source/e6660a4f-5544-42d5-9c1c-b07e7f8e6f05/1c2dbb35f-3f5c-4e3e-b274-6e3ac7646b69.png" alt="Witness Progress">
+        <div class="splash-title">Witness Progress</div>
+        <div class="splash-subtitle">Track your progress in real time with clear charts. See real results every day.</div>
+      </div>
+    </div>
+    <div class="splash-dots" id="splashDots">
+      <div class="splash-dot active" onclick="goToSlide(0)"></div>
+      <div class="splash-dot" onclick="goToSlide(1)"></div>
+      <div class="splash-dot" onclick="goToSlide(2)"></div>
+      <div class="splash-dot" onclick="goToSlide(3)"></div>
+    </div>
+    <div class="splash-actions">
+      <button class="splash-btn splash-btn-skip" onclick="skipSplash()">Skip</button>
+      <button class="splash-btn splash-btn-next" id="splashNextBtn" onclick="nextSplash()">Next</button>
+    </div>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span class="text-xs font-semibold text-gray-800" id="clockTime">7:13 PM</span>
+    <div class="flex items-center gap-2">
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><rect x="0" y="4" width="3" height="8" rx="1" fill="#333"/><rect x="4.5" y="2" width="3" height="10" rx="1" fill="#333"/><rect x="9" y="0" width="3" height="12" rx="1" fill="#333"/><rect x="13.5" y="6" width="2.5" height="6" rx="1" fill="#ddd"/></svg>
+      <svg width="20" height="12" viewBox="0 0 24 12" fill="none"><rect x="0" y="1" width="20" height="10" rx="2" stroke="#333" stroke-width="1.5"/><rect x="21" y="3.5" width="2" height="5" rx="1" fill="#333"/><rect x="2" y="3" width="14" height="6" rx="1" fill="#4CAF50"/></svg>
+      <span class="text-xs font-semibold text-gray-800">92</span>
+    </div>
+  </div>
+
+  <!-- SCREEN 1: HOME -->
+  <div class="screen active-screen" id="screen-home" style="background:linear-gradient(180deg,#FFF0F3 0%,#FFE0E8 50%,#FFD0DC 100%)">
+    <div class="px-5 pt-4 pb-6">
+      <div class="flex items-center justify-between mb-5 animate-in">
+        <div>
+          <p class="text-sm text-gray-500">Good evening,</p>
+          <h2 class="text-xl font-bold text-gray-900">Sarah 👋</h2>
+        </div>
+        <div class="flex items-center gap-1.5 bg-orange-100 px-3 py-2 rounded-full cursor-pointer" onclick="switchScreen('screen-profile')">
+          <span class="material-icons text-orange-500 text-base flame-anim">local_fire_department</span>
+          <span class="text-sm font-bold text-orange-600" id="streakDisplay">7 days</span>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-br from-pink-500 to-rose-600 rounded-3xl p-5 mb-5 animate-in delay-1 relative overflow-hidden cursor-pointer btn-ripple" onclick="startWorkout('today')" style="--x:70%;--y:30%">
+        <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-10 -mt-10"></div>
+        <div class="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-10 -mb-10"></div>
+        <div class="relative z-10">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-white/25 px-3 py-1 rounded-full text-xs font-semibold text-white">TODAY</span>
+            <span class="text-white/80 text-xs" id="todayDateBadge">Day 24 of 30</span>
+          </div>
+          <h3 class="text-2xl font-bold text-white mb-1">30-Day Fat Burn</h3>
+          <p class="text-white/85 text-sm mb-4">Full Body • 20 min • 180 kcal</p>
+          <div class="flex items-center gap-3 mb-4">
+            <div class="flex-1 h-2 bg-white/25 rounded-full overflow-hidden">
+              <div class="h-full bg-white rounded-full" style="width:80%"></div>
+            </div>
+            <span class="text-white text-sm font-bold">80%</span>
+          </div>
+          <button class="bg-white text-pink-600 font-bold px-6 py-3 rounded-2xl text-sm active:scale-95 transition-transform shadow-lg flex items-center gap-2">
+            <span class="material-icons text-lg">play_arrow</span> Start Workout
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3 mb-5 animate-in delay-2">
+        <div class="stat-card"><div class="text-2xl font-bold text-pink-500" id="totalWorkouts">23</div><div class="text-xs text-gray-500">Workouts</div></div>
+        <div class="stat-card"><div class="text-2xl font-bold text-orange-500" id="totalCalories">3,240</div><div class="text-xs text-gray-500">Calories</div></div>
+        <div class="stat-card"><div class="text-2xl font-bold text-purple-500" id="totalMinutes">460</div><div class="text-xs text-gray-500">Minutes</div></div>
+      </div>
+
+      <h3 class="font-bold text-gray-900 mb-3 animate-in delay-3">Workout Categories</h3>
+      <div class="grid grid-cols-2 gap-3 mb-5 animate-in delay-3">
+        <div class="bg-gradient-to-br from-pink-100 to-pink-200 rounded-2xl p-4 cursor-pointer active:scale-95 transition-transform" onclick="showWorkoutDetail('wall-pilates')">
+          <span class="material-icons text-3xl text-pink-600 mb-2">self_improvement</span>
+          <div class="font-bold text-gray-900 text-sm">Wall Pilates</div>
+          <div class="text-xs text-gray-600">15 min • Beginner</div>
+        </div>
+        <div class="bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl p-4 cursor-pointer active:scale-95 transition-transform" onclick="showWorkoutDetail('weight-loss')">
+          <span class="material-icons text-3xl text-orange-600 mb-2">local_fire_department</span>
+          <div class="font-bold text-gray-900 text-sm">Weight Loss</div>
+          <div class="text-xs text-gray-600">20 min • HIIT</div>
+        </div>
+        <div class="bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl p-4 cursor-pointer active:scale-95 transition-transform" onclick="showWorkoutDetail('chair-yoga')">
+          <span class="material-icons text-3xl text-purple-600 mb-2">airline_seat_recline_extra</span>
+          <div class="font-bold text-gray-900 text-sm">Chair Yoga</div>
+          <div class="text-xs text-gray-600">25 min • Flexibility</div>
+        </div>
+        <div class="bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl p-4 cursor-pointer active:scale-95 transition-transform" onclick="showWorkoutDetail('stretching')">
+          <span class="material-icons text-3xl text-blue-600 mb-2">accessibility_new</span>
+          <div class="font-bold text-gray-900 text-sm">Stretching</div>
+          <div class="text-xs text-gray-600">10 min • Recovery</div>
+        </div>
+      </div>
+
+      <h3 class="font-bold text-gray-900 mb-3 animate-in delay-4">This Week</h3>
+      <div class="bg-white rounded-3xl p-4 shadow-sm animate-in delay-4">
+        <div class="flex justify-between items-end h-28" id="weeklyBars"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: WORKOUTS -->
+  <div class="screen hidden-screen" id="screen-workouts" style="background:linear-gradient(180deg,#FFF5F7 0%,#FFF0F3 100%)">
+    <div class="px-5 pt-4 pb-6">
+      <h1 class="text-2xl font-bold text-gray-900 mb-4">Workout Library</h1>
+      <div class="relative mb-4">
+        <input type="text" id="searchInput" placeholder="Search workouts..." class="w-full bg-gray-100 rounded-2xl px-4 py-3 pl-12 text-sm outline-none focus:ring-2 focus:ring-pink-300 transition" oninput="filterWorkouts()">
+        <span class="material-icons absolute left-4 top-3 text-gray-400">search</span>
+      </div>
+      <div class="flex gap-2 overflow-x-auto pb-4 mb-4 scrollbar-hide">
+        <div class="tab-pill active" onclick="filterCategory(this,'all')">All</div>
+        <div class="tab-pill" onclick="filterCategory(this,'beginner')">Beginner</div>
+        <div class="tab-pill" onclick="filterCategory(this,'intermediate')">Intermediate</div>
+        <div class="tab-pill" onclick="filterCategory(this,'advanced')">Advanced</div>
+        <div class="tab-pill" onclick="filterCategory(this,'yoga')">Yoga</div>
+      </div>
+      <div class="space-y-4" id="workoutList">
+        <div class="workout-card h-44" data-category="beginner" data-name="wall pilates" onclick="showWorkoutDetail('wall-pilates')">
+          <img src="https://image.qwenlm.ai/public_source/e6660a4f-5544-42d5-9c1c-b07e7f8e6f05/1cfa58a6a-358e-439e-a1b6-3c3349c48ee6.png" alt="Wall Pilates">
+          <div class="overlay"></div>
+          <div class="absolute bottom-4 left-4 right-4"><h3 class="text-white font-bold text-xl">Wall Pilates</h3><p class="text-white/80 text-xs mt-1">15 min • Beginner • Core</p></div>
+          <div class="absolute top-3 right-3 bg-white/90 rounded-full px-3 py-1 text-xs font-semibold text-pink-600 flex items-center gap-1"><span class="material-icons text-sm">star</span> Popular</div>
+        </div>
+        <div class="workout-card h-44" data-category="intermediate" data-name="weight loss hiit" onclick="showWorkoutDetail('weight-loss')">
+          <img src="https://image.qwenlm.ai/public_source/e6660a4f-5544-42d5-9c1c-b07e7f8e6f05/1cfc2c8f3-a757-4572-b949-f37e26dcf6ce.png" alt="Weight Loss">
+          <div class="overlay"></div>
+          <div class="absolute bottom-4 left-4 right-4"><h3 class="text-white font-bold text-xl">Weight Loss HIIT</h3><p class="text-white/80 text-xs mt-1">20 min • All Levels • Full Body</p></div>
+          <div class="absolute top-3 right-3 bg-pink-500 rounded-full px-3 py-1 text-xs font-semibold text-white flex items-center gap-1"><span class="material-icons text-sm">new_releases</span> NEW</div>
+        </div>
+        <div class="workout-card h-44" data-category="yoga" data-name="chair yoga" onclick="showWorkoutDetail('chair-yoga')">
+          <img src="https://image.qwenlm.ai/public_source/e6660a4f-5544-42d5-9c1c-b07e7f8e6f05/19c60d4e0-aa26-4d18-9482-c33220744821.png" alt="Chair Yoga">
+          <div class="overlay" style="background:linear-gradient(to top,rgba(120,80,180,0.7) 0%,transparent 60%)"></div>
+          <div class="absolute bottom-4 left-4 right-4"><h3 class="text-white font-bold text-xl">Chair Yoga</h3><p class="text-white/80 text-xs mt-1">25 min • Beginner • Flexibility</p></div>
+        </div>
+        <div class="workout-card h-44" data-category="beginner" data-name="stretching" onclick="showWorkoutDetail('stretching')">
+          <img src="https://image.qwenlm.ai/public_source/e6660a4f-5544-42d5-9c1c-b07e7f8e6f05/15648268a-8aaf-42d6-a60a-1d80ee899c29.png" alt="Stretching">
+          <div class="overlay" style="background:linear-gradient(to top,rgba(60,100,160,0.7) 0%,transparent 60%)"></div>
+          <div class="absolute bottom-4 left-4 right-4"><h3 class="text-white font-bold text-xl">Stretching</h3><p class="text-white/80 text-xs mt-1">10 min • All Levels • Recovery</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: PLAN -->
+  <div class="screen hidden-screen" id="screen-plan" style="background:linear-gradient(180deg,#FFF0F3 0%,#FFE8EE 100%)">
+    <div class="px-5 pt-4 pb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-2xl font-bold text-gray-900">30-Day Plan</h1>
+        <div class="flex items-center gap-1 bg-orange-100 px-3 py-1.5 rounded-full">
+          <span class="material-icons text-orange-500 text-base flame-anim">local_fire_department</span>
+          <span class="text-sm font-bold text-orange-600" id="planStreak">7 Day Streak</span>
+        </div>
+      </div>
+      <h2 class="text-3xl font-extrabold text-gray-900 mb-1">30-Day Fat Burn</h2>
+      <p class="text-gray-600 mb-5">See real and steady results every day</p>
+      <div class="mb-5">
+        <div class="flex justify-between text-sm mb-2"><span class="font-semibold text-gray-700">Overall Progress</span><span class="font-bold text-pink-500" id="progressText">23/30 days</span></div>
+        <div class="h-3 bg-white rounded-full overflow-hidden shadow-inner"><div class="h-full bg-gradient-to-r from-pink-400 to-pink-600 rounded-full transition-all duration-1000" id="progressBar" style="width:76%"></div></div>
+      </div>
+      <div class="space-y-4" id="weekCards"></div>
+      <button class="w-full mt-6 py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold text-lg rounded-2xl shadow-lg shadow-pink-300/50 active:scale-95 transition-transform btn-ripple glow-btn flex items-center justify-center gap-2" onclick="startWorkout('today')">
+        <span class="material-icons">local_fire_department</span> Today's Workout
+      </button>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: PROGRESS -->
+  <div class="screen hidden-screen" id="screen-progress" style="background:linear-gradient(180deg,#FFF0F3 0%,#FFE8EE 100%)">
+    <div class="px-5 pt-4 pb-6">
+      <h1 class="text-2xl font-bold text-gray-900 mb-1">Witness Progress</h1>
+      <p class="text-gray-600 mb-5">Track your progress in real time</p>
+      <div class="grid grid-cols-3 gap-3 mb-5">
+        <div class="stat-card"><div class="text-xs text-gray-500 font-medium mb-1">Weight</div><div class="text-lg font-bold text-gray-900">-8.60kg</div><span class="material-icons text-green-500 text-sm">trending_down</span></div>
+        <div class="stat-card"><div class="text-xs text-gray-500 font-medium mb-1">Body fat</div><div class="text-lg font-bold text-gray-900">-5.2%</div><span class="material-icons text-green-500 text-sm">trending_down</span></div>
+        <div class="stat-card"><div class="text-xs text-gray-500 font-medium mb-1">Waistline</div><div class="text-lg font-bold text-gray-900">-10.4cm</div><span class="material-icons text-green-500 text-sm">trending_down</span></div>
+      </div>
+      <div class="bg-white rounded-3xl p-5 shadow-sm mb-5">
+        <div class="flex items-center justify-between mb-4"><h3 class="font-bold text-lg text-gray-900">Weight (kg)</h3><div class="bg-pink-100 px-3 py-1 rounded-full"><span class="text-sm font-bold text-pink-600">-8.60 kg</span></div></div>
+        <div class="chart-container"><canvas id="weightChart"></canvas></div>
+      </div>
+      <div class="bg-white rounded-3xl p-5 shadow-sm mb-5">
+        <div class="flex items-center justify-between">
+          <div><h3 class="font-bold text-lg text-gray-900">BMI</h3><div class="text-4xl font-extrabold text-gray-900 mt-1">22.9</div><div class="flex items-center gap-1 mt-1"><span class="material-icons text-green-500 text-lg">check_circle</span><span class="text-sm font-bold text-green-600">NORMAL</span></div></div>
+          <div class="gauge-container">
+            <svg viewBox="0 0 200 120" class="w-full h-full">
+              <path d="M 20 110 A 80 80 0 0 1 180 110" fill="none" stroke="#e0e0e0" stroke-width="16" stroke-linecap="round"/>
+              <path d="M 20 110 A 80 80 0 0 1 52 42" fill="none" stroke="#4FC3F7" stroke-width="16" stroke-linecap="round"/>
+              <path d="M 52 42 A 80 80 0 0 1 100 30" fill="none" stroke="#66BB6A" stroke-width="16"/>
+              <path d="M 100 30 A 80 80 0 0 1 148 42" fill="none" stroke="#FFCA28" stroke-width="16"/>
+              <path d="M 148 42 A 80 80 0 0 1 172 72" fill="none" stroke="#FFA726" stroke-width="16"/>
+              <path d="M 172 72 A 80 80 0 0 1 180 110" fill="none" stroke="#EF5350" stroke-width="16" stroke-linecap="round"/>
+              <text x="15" y="115" font-size="9" fill="#999" font-weight="600">17</text>
+              <text x="95" y="22" font-size="9" fill="#999" font-weight="600">25</text>
+              <text x="175" y="115" font-size="9" fill="#999" font-weight="600">40</text>
+              <line id="bmiNeedle" x1="100" y1="110" x2="100" y2="40" stroke="#333" stroke-width="3" stroke-linecap="round" style="transform-origin:100px 110px;transform:rotate(-30deg);transition:transform 1.5s cubic-bezier(0.4,0,0.2,1)"/>
+              <circle cx="100" cy="110" r="8" fill="#333"/><circle cx="100" cy="110" r="4" fill="#fff"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-3xl p-5 shadow-sm">
+        <h3 class="font-bold text-gray-900 mb-4">Recent Workouts</h3>
+        <div class="space-y-3" id="workoutHistory"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 5: PROFILE -->
+  <div class="screen hidden-screen" id="screen-profile" style="background:linear-gradient(180deg,#FFF0F3 0%,#FFE8EE 100%)">
+    <div class="px-5 pt-4 pb-6">
+      <div class="text-center mb-5">
+        <div class="w-24 h-24 rounded-full bg-gradient-to-br from-pink-400 to-pink-600 mx-auto mb-3 flex items-center justify-center text-white text-3xl font-bold shadow-lg shadow-pink-300/50">S</div>
+        <h2 class="text-2xl font-bold text-gray-900">Sarah Johnson</h2>
+        <p class="text-gray-500 text-sm">Member since Jan 2026</p>
+      </div>
+      <div class="bg-white rounded-3xl p-5 shadow-sm mb-4">
+        <div class="flex items-center justify-between mb-4"><h3 class="font-bold text-gray-900">Choose Your Coach</h3><span class="material-icons text-gray-400">person</span></div>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="coach-option selected" data-coach="mia" onclick="selectCoach('mia')">
+            <img src="https://image.qwenlm.ai/public_source/150db167-4e62-4fb1-981b-a618da657bba/1081a1de4-957a-456e-abd3-120f4cf32aa9.png" class="w-full h-32 object-cover" alt="Mia">
+            <div class="p-2 text-center"><div class="font-bold text-sm text-gray-900">Mia</div><div class="text-xs text-gray-500">Energetic</div></div>
+          </div>
+          <div class="coach-option" data-coach="alex" onclick="selectCoach('alex')">
+            <img src="https://image.qwenlm.ai/public_source/150db167-4e62-4fb1-981b-a618da657bba/189b0d909-869a-417e-a7c5-a43346b0a610.png" class="w-full h-32 object-cover" alt="Alex">
+            <div class="p-2 text-center"><div class="font-bold text-sm text-gray-900">Alex</div><div class="text-xs text-gray-500">Strong</div></div>
+          </div>
+          <div class="coach-option" data-coach="yuki" onclick="selectCoach('yuki')">
+            <img src="https://image.qwenlm.ai/public_source/150db167-4e62-4fb1-981b-a618da657bba/191b3379d-0b61-4d90-a3be-08a4515abe86.png" class="w-full h-32 object-cover" alt="Yuki">
+            <div class="p-2 text-center"><div class="font-bold text-sm text-gray-900">Yuki</div><div class="text-xs text-gray-500">Calm</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-3xl p-5 shadow-sm mb-4">
+        <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2"><span class="material-icons text-pink-500">record_voice_over</span> Voice Coach</h3>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between py-2">
+            <div class="flex items-center gap-3"><span class="material-icons text-gray-600">volume_up</span><span class="text-sm text-gray-700">Voice Guidance</span></div>
+            <div class="toggle-switch on" id="voiceToggle" onclick="toggleVoice()"></div>
+          </div>
+          <div class="flex items-center justify-between py-2">
+            <div class="flex items-center gap-3"><span class="material-icons text-gray-600">speed</span><span class="text-sm text-gray-700">Speech Speed</span></div>
+            <select id="voiceSpeed" class="bg-gray-100 rounded-lg px-2 py-1 text-sm outline-none" onchange="updateVoiceSpeed()">
+              <option value="0.8">Slow</option><option value="1" selected>Normal</option><option value="1.3">Fast</option>
+            </select>
+          </div>
+          <button class="w-full mt-2 py-2.5 bg-pink-50 text-pink-600 font-semibold rounded-xl text-sm active:scale-95 transition flex items-center justify-center gap-2" onclick="testVoice()">
+            <span class="material-icons text-lg">play_arrow</span> Test Voice
+          </button>
+        </div>
+      </div>
+      <div class="bg-white rounded-3xl p-5 shadow-sm mb-4">
+        <h3 class="font-bold text-gray-900 mb-4">My Goals</h3>
+        <div class="space-y-4">
+          <div><div class="flex justify-between text-sm mb-1"><span class="text-gray-600">Weight Goal</span><span class="font-bold text-pink-500">63.4 / 72 kg</span></div><div class="h-2.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-pink-400 to-pink-600 rounded-full" style="width:88%"></div></div></div>
+          <div><div class="flex justify-between text-sm mb-1"><span class="text-gray-600">Weekly Workouts</span><span class="font-bold text-pink-500">5 / 6</span></div><div class="h-2.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-orange-400 to-orange-600 rounded-full" style="width:83%"></div></div></div>
+          <div><div class="flex justify-between text-sm mb-1"><span class="text-gray-600">Water Intake</span><span class="font-bold text-pink-500" id="waterCount">6 / 8 glasses</span></div><div class="h-2.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full" id="waterBar" style="width:75%"></div></div>
+            <button class="mt-2 w-full py-2 bg-blue-50 text-blue-600 font-semibold rounded-xl text-sm active:scale-95 transition flex items-center justify-center gap-2" onclick="addWater()"><span class="material-icons text-base">water_drop</span> Add Glass</button>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-3xl p-5 shadow-sm">
+        <h3 class="font-bold text-gray-900 mb-4">Settings</h3>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between py-2"><div class="flex items-center gap-3"><span class="material-icons text-gray-600">notifications</span><span class="text-sm text-gray-700">Notifications</span></div><div class="toggle-switch on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="flex items-center justify-between py-2 cursor-pointer" onclick="resetProgress()"><div class="flex items-center gap-3"><span class="material-icons text-gray-600">refresh</span><span class="text-sm text-gray-700">Reset Progress</span></div><span class="material-icons text-gray-400">chevron_right</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVE WORKOUT OVERLAY -->
+  <div class="workout-overlay" id="workoutOverlay"><div class="flex-1 flex flex-col" id="activeWorkoutContent"></div></div>
+
+  <!-- CELEBRATION OVERLAY -->
+  <div class="celebration-overlay" id="celebrationOverlay">
+    <div class="celebration-content">
+      <div class="celebration-trophy trophy-anim">🏆</div>
+      <div class="celebration-title congrats-pop" id="congratsTitle">HURRAY!</div>
+      <div class="celebration-subtitle hurray-text" id="congratsSubtitle">Congratulations!</div>
+      <div class="celebration-stats">
+        <div class="celebration-stat"><div class="celebration-stat-value" id="celebTime">0:00</div><div class="celebration-stat-label">Time</div></div>
+        <div class="celebration-stat"><div class="celebration-stat-value" id="celebCal">0</div><div class="celebration-stat-label">Calories</div></div>
+        <div class="celebration-stat"><div class="celebration-stat-value" id="celebStreak">0</div><div class="celebration-stat-label">Streak</div></div>
+      </div>
+      <button class="celebration-btn" onclick="closeCelebration()">Continue</button>
+    </div>
+  </div>
+
+  <!-- WORKOUT DETAIL MODAL -->
+  <div class="modal-overlay" id="workoutModal" onclick="closeWorkoutModal(event)"><div class="modal-content" onclick="event.stopPropagation()"><div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-5"></div><div id="modalBody"></div></div></div>
+
+  <div id="confettiContainer"></div>
+  <div id="flyingGiftsContainer"></div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav" id="bottomNav">
+    <div class="nav-item active" onclick="switchScreen('screen-home')" data-screen="screen-home"><span class="material-icons nav-icon">home</span><span class="nav-label">Home</span></div>
+    <div class="nav-item" onclick="switchScreen('screen-workouts')" data-screen="screen-workouts"><span class="material-icons nav-icon">fitness_center</span><span class="nav-label">Workouts</span></div>
+    <div class="nav-item" onclick="switchScreen('screen-plan')" data-screen="screen-plan"><span class="material-icons nav-icon">calendar_today</span><span class="nav-label">Plan</span></div>
+    <div class="nav-item" onclick="switchScreen('screen-progress')" data-screen="screen-progress"><span class="material-icons nav-icon">show_chart</span><span class="nav-label">Progress</span></div>
+    <div class="nav-item" onclick="switchScreen('screen-profile')" data-screen="screen-profile"><span class="material-icons nav-icon">person</span><span class="nav-label">Profile</span></div>
+  </div>
+</div>
+
+<script>
+// ============ SCALABLE DATA LAYER ============
+const AppConfig = {
+  EXERCISE_DURATION: 30,
+  REST_DURATION: 10,
+  CALORIES_PER_EXERCISE: 8,
+  TOTAL_DAYS: 30,
+  START_DATE_OFFSET: 23 // days ago the plan started
+};
+
+const AppState = {
+  currentScreen: 'screen-home',
+  streak: 7,
+  totalWorkouts: 23,
+  totalCalories: 3240,
+  totalMinutes: 460,
+  waterGlasses: 6,
+  completedDays: Array.from({length: 23}, (_, i) => i + 1),
+  activeWorkout: null,
+  currentExerciseIndex: 0,
+  reps: 0,
+  workoutTimer: 0,
+  workoutInterval: null,
+  exerciseTimeLeft: 30,
+  exerciseTimerInterval: null,
+  isPaused: false,
+  caloriesBurned: 0,
+  currentCategory: 'all',
+  searchQuery: '',
+  selectedCoach: 'mia',
+  voiceEnabled: true,
+  voiceSpeed: 1,
+  voiceSynth: window.speechSynthesis,
+  voiceQueue: [],
+  isSpeaking: false,
+  recentWorkouts: [
+    { name: 'HIIT Fat Burn', date: 'Yesterday', time: '25 min', calories: 220, icon: 'bolt', color: 'pink' },
+    { name: 'Wall Pilates', date: '2 days ago', time: '15 min', calories: 120, icon: 'self_improvement', color: 'purple' },
+    { name: 'Weight Loss', date: '3 days ago', time: '20 min', calories: 180, icon: 'local_fire_department', color: 'orange' },
+    { name: 'Chair Yoga', date: '4 days ago', time: '25 min', calories: 80, icon: 'airline_seat_recline_extra', color: 'indigo' },
+    { name: 'Stretching', date: '5 days ago', time: '10 min', calories: 50, icon: 'accessibility_new', color: 'blue' }
+  ],
+  planStartDate: null,
+  currentDay: 24
+};
+
+// ============ COACHES ============
+const Coaches = {
+  mia: { name: 'Mia', style: 'energetic', portrait: 'https://image.qwenlm.ai/public_source/150db167-4e62-4fb1-981b-a618da657bba/1081a1de4-957a-456e-abd3-120f4cf32aa9.png', messages: { start: "Let's go! You've got this!", halfway: "Halfway there! Don't stop now!", complete: "Amazing work! You're unstoppable!", rest: "Take a breather. You earned it!", last: "Last one! Give it everything!" } },
+  alex: { name: 'Alex', style: 'strong', portrait: 'https://image.qwenlm.ai/public_source/150db167-4e62-4fb1-981b-a618da657bba/189b0d909-869a-417e-a7c5-a43346b0a610.png', messages: { start: "Time to crush it! Let's work!", halfway: "You're halfway. Stay strong!", complete: "Beast mode! Incredible effort!", rest: "Recover strong. Next set awaits!", last: "Final rep! Make it count!" } },
+  yuki: { name: 'Yuki', style: 'calm', portrait: 'https://image.qwenlm.ai/public_source/150db167-4e62-4fb1-981b-a618da657bba/191b3379d-0b61-4d90-a3be-08a4515abe86.png', messages: { start: "Breathe deep. Let's begin gently.", halfway: "You're doing wonderfully. Keep flowing.", complete: "Peaceful strength. Well done.", rest: "Rest mindfully. Breathe.", last: "One more, with grace." } }
+};
+
+// ============ EXERCISE INSTRUCTIONS (with body positioning) ============
+const ExerciseInstructions = {
+  jumping: {
+    title: 'Jumping Jacks',
+    bodyPosition: 'Stand tall with feet together, arms at your sides. Keep your core engaged and back straight.',
+    steps: ['Stand upright with feet together and arms at sides', 'Jump while spreading legs shoulder-width apart', 'Simultaneously raise arms overhead, clapping hands', 'Jump back to starting position', 'Keep core engaged, land softly on balls of feet', 'Maintain steady breathing throughout'],
+    rest: 'Rest for 10 seconds. Shake out your arms and legs, take deep breaths.',
+    tips: 'Keep movements controlled. Land softly to protect joints.',
+    muscles: 'Full Body, Cardio, Shoulders, Legs'
+  },
+  squat: {
+    title: 'Squats',
+    bodyPosition: 'Stand with feet shoulder-width apart, toes slightly turned out. Keep chest up, shoulders back, and core tight.',
+    steps: ['Stand with feet shoulder-width apart', 'Keep chest up and core engaged', 'Push hips back as if sitting in a chair', 'Lower until thighs parallel to floor', 'Keep knees behind toes, weight on heels', 'Push through heels to return to standing', 'Squeeze glutes at the top'],
+    rest: 'Rest for 10 seconds. Stand tall, roll your shoulders back, breathe deeply.',
+    tips: 'Never let knees cave inward. Keep back straight throughout.',
+    muscles: 'Quadriceps, Glutes, Hamstrings, Core'
+  },
+  pushup: {
+    title: 'Push-ups',
+    bodyPosition: 'Start in plank position with hands shoulder-width apart. Keep body in a straight line from head to heels, core engaged.',
+    steps: ['Start in plank position, hands shoulder-width apart', 'Keep body in straight line from head to heels', 'Lower chest toward floor by bending elbows', 'Keep elbows at 45-degree angle to body', 'Push back up to starting position', 'Engage core throughout the movement'],
+    rest: 'Rest for 10 seconds. Drop to knees if needed, shake out your arms.',
+    tips: 'If too difficult, modify by dropping to knees. Keep hips level.',
+    muscles: 'Chest, Triceps, Shoulders, Core'
+  },
+  plank: {
+    title: 'Plank',
+    bodyPosition: 'Start on forearms and toes. Elbows directly under shoulders. Keep body in a straight line, no sagging hips.',
+    steps: ['Start on forearms and toes', 'Keep elbows directly under shoulders', 'Engage core and squeeze glutes', 'Keep body in straight line, no sagging hips', 'Look down at floor, neck neutral', 'Breathe steadily, hold the position', 'Focus on keeping hips level'],
+    rest: 'Rest for 10 seconds. Gently lower to the floor, stretch your back.',
+    tips: 'Quality over duration. Stop if your back starts to sag.',
+    muscles: 'Core, Abs, Lower Back, Shoulders'
+  },
+  lunge: {
+    title: 'Lunges',
+    bodyPosition: 'Stand with feet hip-width apart, hands on hips. Keep torso upright and core engaged throughout.',
+    steps: ['Stand with feet hip-width apart', 'Step forward with one leg', 'Lower hips until both knees bent at 90 degrees', 'Front knee should be above ankle, not past toes', 'Back knee should hover just above floor', 'Push through front heel to return to start', 'Alternate legs with each rep'],
+    rest: 'Rest for 10 seconds. Stand tall, shake out your legs.',
+    tips: 'Keep torso upright. Don\'t let front knee collapse inward.',
+    muscles: 'Quadriceps, Glutes, Hamstrings, Calves'
+  },
+  cobra: {
+    title: 'Cobra Stretch',
+    bodyPosition: 'Lie face down on the floor, legs extended behind you. Place palms flat on floor under your shoulders.',
+    steps: ['Lie face down on the floor, legs extended', 'Place palms flat on floor under shoulders', 'Press into hands and lift chest off floor', 'Keep hips and legs on the ground', 'Roll shoulders back and down', 'Look slightly upward, extend spine', 'Hold for 15-30 seconds, breathe deeply', 'Slowly lower back down'],
+    rest: 'Rest for 10 seconds. Gently lower down, rest your forehead on the mat.',
+    tips: 'Don\'t overextend. Stop if you feel pain in lower back.',
+    muscles: 'Spine, Chest, Shoulders, Abs'
+  },
+  belly: {
+    title: 'Belly Fat Burn',
+    bodyPosition: 'Lie on your back with knees bent, feet flat on floor. Place hands behind head, elbows wide. Keep lower back pressed to floor.',
+    steps: ['Lie on back, knees bent, feet flat on floor', 'Place hands behind head, elbows wide', 'Engage core and lift shoulder blades off floor', 'Bring right elbow toward left knee', 'Extend right leg out straight', 'Switch sides: left elbow to right knee', 'Keep movements controlled and slow', 'Breathe out as you crunch, in as you extend'],
+    rest: 'Rest for 10 seconds. Lie flat, hug knees to chest, breathe.',
+    tips: 'Focus on rotating from the core, not pulling on neck.',
+    muscles: 'Obliques, Abs, Core, Hip Flexors'
+  },
+  hip: {
+    title: 'Hip Exercises',
+    bodyPosition: 'Lie on back with knees bent, feet flat on floor hip-width apart. Arms at sides, palms down.',
+    steps: ['Lie on back with knees bent, feet flat', 'Lift hips up, squeezing glutes at top', 'Lower hips slowly back down', 'For hip circles: stand on one leg', 'Rotate other leg in circular motion', 'Keep core engaged for balance', 'Switch directions after half reps', 'Maintain steady breathing throughout'],
+    rest: 'Rest for 10 seconds. Lie flat, relax your hips.',
+    tips: 'Move slowly and with control. Feel the burn in your hips.',
+    muscles: 'Hip Flexors, Glutes, Core, Outer Thighs'
+  },
+  butt: {
+    title: 'Butt Bridge',
+    bodyPosition: 'Lie on your back, knees bent, feet hip-width apart on the floor. Arms at sides, palms down.',
+    steps: ['Lie on back, knees bent, feet hip-width apart', 'Press through heels to lift hips', 'Squeeze glutes hard at the top', 'Hold for 2 seconds at peak', 'Lower hips slowly, don\'t touch floor', 'Repeat for desired reps', 'For variation: try single-leg bridges', 'Keep knees aligned with feet'],
+    rest: 'Rest for 10 seconds. Lower hips gently, rest on the floor.',
+    tips: 'Focus on squeezing glutes, not pushing with lower back.',
+    muscles: 'Glutes, Hamstrings, Core, Lower Back'
+  }
+};
+
+// ============ WORKOUT DATA ============
+const Workouts = {
+  'today': { name: '30-Day Fat Burn - Day 24', duration: 20, calories: 180, exercises: [
+    { name: 'Jumping Jacks', reps: 30, rest: 10, icon: 'fitness_center', anim: 'jumping', muscle: 'Full Body', type: 'jumping' },
+    { name: 'Squats', reps: 20, rest: 10, icon: 'leg', anim: 'squat', muscle: 'Legs & Glutes', type: 'squat' },
+    { name: 'Push-ups', reps: 15, rest: 10, icon: 'fitness_center', anim: 'pushup', muscle: 'Chest & Arms', type: 'pushup' },
+    { name: 'Plank', reps: 30, rest: 10, icon: 'accessibility_new', anim: 'plank', muscle: 'Core', type: 'plank', isTimer: true },
+    { name: 'Lunges', reps: 16, rest: 10, icon: 'directions_walk', anim: 'lunge', muscle: 'Legs', type: 'lunge' },
+    { name: 'Cobra Stretch', reps: 30, rest: 10, icon: 'self_improvement', anim: 'cobra', muscle: 'Back & Core', type: 'cobra', isTimer: true },
+    { name: 'Belly Fat Burn', reps: 20, rest: 10, icon: 'local_fire_department', anim: 'belly', muscle: 'Abs', type: 'belly' },
+    { name: 'Hip Exercises', reps: 20, rest: 10, icon: 'rotate_right', anim: 'hip', muscle: 'Hips', type: 'hip' },
+    { name: 'Butt Bridge', reps: 20, rest: 10, icon: 'fitness_center', anim: 'butt', muscle: 'Glutes', type: 'butt' }
+  ]},
+  'wall-pilates': { name: 'Wall Pilates', duration: 15, calories: 120, exercises: [
+    { name: 'Wall Sit', reps: 30, rest: 10, icon: 'self_improvement', anim: 'squat', muscle: 'Legs', type: 'squat', isTimer: true },
+    { name: 'Wall Push-ups', reps: 15, rest: 10, icon: 'fitness_center', anim: 'pushup', muscle: 'Chest', type: 'pushup' },
+    { name: 'Cobra Stretch', reps: 30, rest: 10, icon: 'self_improvement', anim: 'cobra', muscle: 'Back', type: 'cobra', isTimer: true },
+    { name: 'Hip Circles', reps: 16, rest: 10, icon: 'rotate_right', anim: 'hip', muscle: 'Hips', type: 'hip' }
+  ]},
+  'weight-loss': { name: 'Weight Loss HIIT', duration: 20, calories: 200, exercises: [
+    { name: 'Jumping Jacks', reps: 40, rest: 10, icon: 'fitness_center', anim: 'jumping', muscle: 'Cardio', type: 'jumping' },
+    { name: 'Belly Fat Burn', reps: 30, rest: 10, icon: 'local_fire_department', anim: 'belly', muscle: 'Core', type: 'belly' },
+    { name: 'Burpees', reps: 10, rest: 10, icon: 'bolt', anim: 'squat', muscle: 'Full Body', type: 'squat' },
+    { name: 'Butt Bridges', reps: 20, rest: 10, icon: 'fitness_center', anim: 'butt', muscle: 'Glutes', type: 'butt' },
+    { name: 'Hip Thrusts', reps: 20, rest: 10, icon: 'rotate_right', anim: 'hip', muscle: 'Hips', type: 'hip' }
+  ]},
+  'chair-yoga': { name: 'Chair Yoga', duration: 25, calories: 80, exercises: [
+    { name: 'Seated Cat-Cow', reps: 10, rest: 10, icon: 'pets', anim: 'cobra', muscle: 'Spine', type: 'cobra' },
+    { name: 'Chair Twist', reps: 8, rest: 10, icon: 'rotate_right', anim: 'lunge', muscle: 'Core', type: 'lunge' },
+    { name: 'Cobra Stretch', reps: 30, rest: 10, icon: 'self_improvement', anim: 'cobra', muscle: 'Back', type: 'cobra', isTimer: true },
+    { name: 'Hip Opener', reps: 30, rest: 10, icon: 'accessibility_new', anim: 'hip', muscle: 'Hips', type: 'hip', isTimer: true }
+  ]},
+  'stretching': { name: 'Stretching', duration: 10, calories: 50, exercises: [
+    { name: 'Cobra Stretch', reps: 30, rest: 10, icon: 'self_improvement', anim: 'cobra', muscle: 'Back', type: 'cobra', isTimer: true },
+    { name: 'Hip Opener', reps: 30, rest: 10, icon: 'accessibility_new', anim: 'hip', muscle: 'Hips', type: 'hip', isTimer: true },
+    { name: 'Butt Stretch', reps: 30, rest: 10, icon: 'fitness_center', anim: 'butt', muscle: 'Glutes', type: 'butt', isTimer: true },
+    { name: 'Belly Release', reps: 30, rest: 10, icon: 'self_improvement', anim: 'belly', muscle: 'Core', type: 'belly', isTimer: true }
+  ]}
+};
+
+// ============ 3D REALISTIC COACH SVG ============
+function getRealisticCoachSVG(animType) {
+  const skinColor = '#F4B89A';
+  const skinDark = '#E8A88A';
+  const hairColor = '#5D4037';
+  const topColor = '#FF4D8D';
+  const topDark = '#E91E63';
+  const pantsColor = '#FFFFFF';
+  const pantsDark = '#F0F0F0';
+  const shoeColor = '#333';
+  
+  const defs = `<defs>
+    <radialGradient id="skinG" cx="50%" cy="40%"><stop offset="0%" stop-color="#FFD4B8"/><stop offset="100%" stop-color="${skinColor}"/></radialGradient>
+    <radialGradient id="skinG2" cx="50%" cy="40%"><stop offset="0%" stop-color="#FFD4B8"/><stop offset="100%" stop-color="${skinDark}"/></radialGradient>
+    <linearGradient id="topG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="${topColor}"/><stop offset="100%" stop-color="${topDark}"/></linearGradient>
+    <linearGradient id="pantsG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="${pantsColor}"/><stop offset="100%" stop-color="${pantsDark}"/></linearGradient>
+    <radialGradient id="faceG" cx="50%" cy="45%"><stop offset="0%" stop-color="#FFE0C8"/><stop offset="100%" stop-color="${skinColor}"/></radialGradient>
+  </defs>`;
+
+  const head = `<ellipse cx="120" cy="70" rx="24" ry="28" fill="url(#faceG)"/>
+    <path d="M 96 65 Q 98 42 120 38 Q 142 42 144 65 Q 142 52 120 48 Q 98 52 96 65" fill="${hairColor}"/>
+    <path d="M 96 65 Q 92 82 95 92" stroke="${hairColor}" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M 144 65 Q 148 82 145 92" stroke="${hairColor}" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <circle cx="112" cy="68" r="2.5" fill="#333"/>
+    <circle cx="128" cy="68" r="2.5" fill="#333"/>
+    <path d="M 108 62 Q 112 60 116 62" stroke="${hairColor}" stroke-width="1.5" fill="none"/>
+    <path d="M 124 62 Q 128 60 132 62" stroke="${hairColor}" stroke-width="1.5" fill="none"/>
+    <path d="M 114 78 Q 120 82 126 78" stroke="#D81B60" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="105" cy="74" rx="3" ry="2" fill="#FFB6C1" opacity="0.5"/>
+    <ellipse cx="135" cy="74" rx="3" ry="2" fill="#FFB6C1" opacity="0.5"/>`;
+
+  const neck = `<rect x="112" y="95" width="16" height="18" rx="8" fill="url(#skinG)"/>`;
+
+  const torso = `<path d="M 95 110 Q 90 145 95 185 L 145 185 Q 150 145 145 110 Z" fill="url(#topG)"/>
+    <path d="M 95 130 Q 120 135 145 130" stroke="${topDark}" stroke-width="1.5" fill="none"/>
+    <path d="M 100 110 L 105 125 L 115 115 Z" fill="${topDark}" opacity="0.3"/>
+    <path d="M 140 110 L 135 125 L 125 115 Z" fill="${topDark}" opacity="0.3"/>`;
+
+  const svgMap = {
+    jumping: `<svg class="coach-svg" viewBox="0 0 240 320" xmlns="http://www.w3.org/2000/svg">${defs}
+      <ellipse cx="120" cy="300" rx="60" ry="8" fill="rgba(0,0,0,0.15)"/>
+      <g class="jj-body">
+        <g class="jj-leg-l"><path d="M 105 185 L 80 240 L 70 295" stroke="url(#pantsG)" stroke-width="22" stroke-linecap="round" fill="none"/><ellipse cx="68" cy="298" rx="14" ry="7" fill="${shoeColor}"/></g>
+        <g class="jj-leg-r"><path d="M 135 185 L 160 240 L 170 295" stroke="url(#pantsG)" stroke-width="22" stroke-linecap="round" fill="none"/><ellipse cx="172" cy="298" rx="14" ry="7" fill="${shoeColor}"/></g>
+        ${torso}${neck}${head}
+        <g class="jj-arm-l"><path d="M 100 115 L 60 90 L 35 60" stroke="url(#skinG)" stroke-width="14" stroke-linecap="round" fill="none"/><circle cx="33" cy="58" r="9" fill="url(#skinG)"/></g>
+        <g class="jj-arm-r"><path d="M 140 115 L 180 90 L 205 60" stroke="url(#skinG)" stroke-width="14" stroke-linecap="round" fill="none"/><circle cx="207" cy="58" r="9" fill="url(#skinG)"/></g>
+      </g></svg>`,
+    
+    squat: `<svg class="coach-svg" viewBox="0 0 240 320" xmlns="http://www.w3.org/2000/svg">${defs}
+      <ellipse cx="120" cy="300" rx="65" ry="8" fill="rgba(0,0,0,0.15)"/>
+      <g class="sq-body">
+        <g class="sq-knee-l"><path d="M 105 185 L 80 220 L 70 295" stroke="url(#pantsG)" stroke-width="24" stroke-linecap="round" fill="none"/><ellipse cx="68" cy="298" rx="14" ry="7" fill="${shoeColor}"/></g>
+        <g class="sq-knee-r"><path d="M 135 185 L 160 220 L 170 295" stroke="url(#pantsG)" stroke-width="24" stroke-linecap="round" fill="none"/><ellipse cx="172" cy="298" rx="14" ry="7" fill="${shoeColor}"/></g>
+        <path d="M 90 115 Q 85 150 92 185 L 148 185 Q 155 150 150 115 Z" fill="url(#topG)"/>
+        ${neck}${head}
+        <g class="sq-arm-l"><path d="M 95 120 L 65 135 L 45 140" stroke="url(#skinG)" stroke-width="13" stroke-linecap="round" fill="none"/><circle cx="43" cy="140" r="8" fill="url(#skinG)"/></g>
+        <g class="sq-arm-r"><path d="M 145 120 L 175 135 L 195 140" stroke="url(#skinG)" stroke-width="13" stroke-linecap="round" fill="none"/><circle cx="197" cy="140" r="8" fill="url(#skinG)"/></g>
+      </g></svg>`,
+    
+    pushup: `<svg class="coach-svg" viewBox="0 0 240 320" xmlns="http://www.w3.org/2000/svg">${defs}
+      <ellipse cx="120" cy="280" rx="90" ry="6" fill="rgba(0,0,0,0.15)"/>
+      <g class="pu-body">
+        <path d="M 150 200 L 195 205 L 215 210" stroke="url(#pantsG)" stroke-width="20" stroke-linecap="round" fill="none"/>
+        <path d="M 150 215 L 195 220 L 215 225" stroke="url(#pantsG)" stroke-width="20" stroke-linecap="round" fill="none"/>
+        <path d="M 75 175 Q 115 170 155 175 L 155 220 Q 115 215 75 220 Z" fill="url(#topG)"/>
+        <ellipse cx="65" cy="190" rx="22" ry="24" fill="url(#faceG)"/>
+        <path d="M 50 180 Q 55 165 70 163 Q 83 165 83 180" fill="${hairColor}"/>
+        <circle cx="58" cy="188" r="2.5" fill="#333"/>
+        <circle cx="72" cy="188" r="2.5" fill="#333"/>
+        <path d="M 60 198 Q 65 201 70 198" stroke="#D81B60" stroke-width="1.5" fill="none"/>
+        <g class="pu-arm-l"><path d="M 85 195 L 80 240 L 75 270" stroke="url(#skinG)" stroke-width="12" stroke-linecap="round" fill="none"/><circle cx="75" cy="273" r="8" fill="url(#skinG)"/></g>
+        <g class="pu-arm-r"><path d="M 105 195 L 100 240 L 95 270" stroke="url(#skinG)" stroke-width="12" stroke-linecap="round" fill="none"/><circle cx="95" cy="273" r="8" fill="url(#skinG)"/></g>
+      </g></svg>`,
+    
+    plank: `<svg class="coach-svg" viewBox="0 0 240 320" xmlns="http://www.w3.org/2000/svg">${defs}
+      <ellipse cx="120" cy="260" rx="95" ry="6" fill="rgba(0,0,0,0.15)"/>
+      <g class="pl-core"><g class="pl-shake">
+        <path d="M 160 200 L 205 203 L 220 205" stroke="url(#pantsG)" stroke-width="18" stroke-linecap="round" fill="none"/>
+        <path d="M 160 215 L 205 218 L 220 220" stroke="url(#pantsG)" stroke-width="18" stroke-linecap="round" fill="none"/>
+        <path d="M 75 185 Q 115 180 165 185 L 165 220 Q 115 215 75 220 Z" fill="url(#topG)"/>
+        <ellipse cx="65" cy="198" rx="20" ry="22" fill="url(#faceG)"/>
+        <path d="M 50 188 Q 55 175 68 173 Q 80 175 80 188" fill="${hairColor}"/>
+        <circle cx="58" cy="196" r="2.5" fill="#333"/>
+        <circle cx="72" cy="196" r="2.5" fill="#333"/>
+        <path d="M 60 206 Q 65 209 70 206" stroke="#D81B60" stroke-width="1.5" fill="none"/>
+        <path d="M 80 210 L 65 240 L 55 245" stroke="url(#skinG)" stroke-width="11" stroke-linecap="round" fill="none"/>
+        <path d="M 95 210 L 80 240 L 70 245" stroke="url(#skinG)" stroke-width="11" stroke-linecap="round" fill="none"/>
+        <circle cx="53" cy="247" r="7" fill="url(#skinG)"/>
+        <circle cx="68" cy="247" r="7" fill="url(#skinG)"/>
+      </g></g></svg>`,
+    
+    lunge: `<svg class="coach-svg" viewBox="0 0 240 320" xmlns="http://www.w3.org/2000/svg">${defs}
+      <ellipse cx="120" cy="300" rx="70" ry="8" fill="rgba(0,0,0,0.15)"/>
+      <g class="lu-step">
+        <g class="lu-back"><path d="M 125 190 L 150 230 L 175 295" stroke="url(#pantsG)" stroke-width="22" stroke-linecap="round" fill="none"/><ellipse cx="177" cy="298" rx="14" ry="7" fill="${shoeColor}"/></g>
+        <g class="lu-knee"><path d="M 110 190 L 85 230 L 75 295" stroke="url(#pantsG)" stroke-width="22" stroke-linecap="round" fill="none"/><ellipse cx="73" cy="298" rx="14" ry="7" fill="${shoeColor}"/></g>
+        <path d="M 95 110 Q 92 150 98 190 L 140 190 Q 145 150 142 110 Z" fill="url(#topG)"/>
+        ${neck}${head}
+        <path d="M 98 120 L 78 140 L 82 165" stroke="url(#skinG)" stroke-width="12" stroke-linecap="round" fill="none"/>
+        <path d="M 140 120 L 160 140 L 156 165" stroke="url(#skinG)" stroke-width="12" stroke-linecap="round" fill="none"/>
+        <circle cx="82" cy="167" r="8" fill="url(#skinG)"/>
+        <circle cx="156" cy="167" r="8" fill="url(#skinG)"/>
+      </g></svg>`,
+    
+    cobra: `<svg class="coach-svg" viewBox="0 0 240 320" xmlns="http://www.w3.org/2000/svg">${defs}
+      <ellipse cx="120" cy="280" rx="90" ry="6" fill="rgba(0,0,0,0.15)"/>
+      <path d="M 140 250 L 185 252 L 205 255" stroke="url(#pantsG)" stroke-width="18" stroke-linecap="round" fill="none"/>
+      <path d="M 140 265 L 185 267 L 205 270" stroke="url(#pantsG)" stroke-width="18" stroke-linecap="round" fill="none"/>
+      <g class="cb-rise">
+        <path d="M 80 245 Q 95 200 105 165 L 135 165 Q 145 200 150 245 Z" fill="url(#topG)"/>
+        <ellipse cx="113" cy="145" rx="22" ry="26" fill="url(#faceG)"/>
+        <path d="M 93 135 Q 98 118 115 116 Q 130 118 133 135" fill="${hairColor}"/>
+        <circle cx="107" cy="143" r="2.5" fill="#333"/>
+        <circle cx="119" cy="143" r="2.5" fill="#333"/>
+        <path d="M 109 153 Q 113 156 117 153" stroke="#D81B60" stroke-width="1.5" fill="none"/>
+        <g class="cb-arm-l"><path d="M 90 200 L 75 235 L 70 260" stroke="url(#skinG)" stroke-width="12" stroke-linecap="round" fill="none"/><circle cx="70" cy="262" r="8" fill="url(#skinG)"/></g>
+        <g class="cb-arm-r"><path d="M 130 200 L 145 235 L 150 260" stroke="url(#skinG)" stroke-width="12" stroke-linecap="round" fill="none"/><circle cx="150" cy="262" r="8" fill="url(#skinG)"/></g>
+      </g></svg>`,
+    
+    belly: `<svg class="coach-svg" viewBox="0 0 240 320" xmlns="http://www.w3.org/2000/svg">${defs}
+      <ellipse cx="120" cy="280" rx="85" ry="6" fill="rgba(0,0,0,0.15)"/>
+      <path d="M 150 250 L 180 255 L 190 270" stroke="url(#pantsG)" stroke-width="18" stroke-linecap="round" fill="none"/>
+      <path d="M 150 265 L 180 270 L 190 285" stroke="url(#pantsG)" stroke-width="18" stroke-linecap="round" fill="none"/>
+      <g class="bl-curl">
+        <path d="M 75 230 Q 95 200 115 195 L 145 200 Q 155 220 150 255 L 80 255 Z" fill="url(#topG)"/>
+        <ellipse cx="100" cy="180" rx="22" ry="24" fill="url(#faceG)"/>
+        <path d="M 83 172 Q 87 158 103 156 Q 117 158 118 172" fill="${hairColor}"/>
+        <circle cx="95" cy="178" r="2.5" fill="#333"/>
+        <circle cx="106" cy="178" r="2.5" fill="#333"/>
+        <path d="M 85 200 L 75 180 L 80 165" stroke="url(#skinG)" stroke-width="11" stroke-linecap="round" fill="none"/>
+        <path d="M 115 198 L 120 180 L 115 165" stroke="url(#skinG)" stroke-width="11" stroke-linecap="round" fill="none"/>
+        <circle cx="80" cy="163" r="8" fill="url(#skinG)"/>
+        <circle cx="115" cy="163" r="8" fill="url(#skinG)"/>
+      </g></svg>`,
+    
+    hip: `<svg class="coach-svg" viewBox="0 0 240 320" xmlns="http://www.w3.org/2000/svg">${defs}
+      <ellipse cx="120" cy="300" rx="60" ry="8" fill="rgba(0,0,0,0.15)"/>
+      <g class="hp-lift">
+        <path d="M 110 190 L 105 240 L 100 295" stroke="url(#pantsG)" stroke-width="22" stroke-linecap="round" fill="none"/>
+        <ellipse cx="100" cy="298" rx="14" ry="7" fill="${shoeColor}"/>
+        <g class="hp-rotate"><path d="M 125 190 L 150 220 L 170 245" stroke="url(#pantsG)" stroke-width="22" stroke-linecap="round" fill="none"/><ellipse cx="172" cy="248" rx="14" ry="7" fill="${shoeColor}"/></g>
+        <path d="M 95 110 Q 92 150 98 190 L 140 190 Q 145 150 142 110 Z" fill="url(#topG)"/>
+        ${neck}${head}
+        <path d="M 98 120 L 65 130 L 50 135" stroke="url(#skinG)" stroke-width="12" stroke-linecap="round" fill="none"/>
+        <path d="M 140 120 L 173 130 L 188 135" stroke="url(#skinG)" stroke-width="12" stroke-linecap="round" fill="none"/>
+        <circle cx="48" cy="135" r="8" fill="url(#skinG)"/>
+        <circle cx="190" cy="135" r="8" fill="url(#skinG)"/>
+      </g></svg>`,
+    
+    butt: `<svg class="coach-svg" viewBox="0 0 240 320" xmlns="http://www.w3.org/2000/svg">${defs}
+      <ellipse cx="120" cy="280" rx="90" ry="6" fill="rgba(0,0,0,0.15)"/>
+      <ellipse cx="80" cy="270" rx="14" ry="7" fill="${shoeColor}"/>
+      <ellipse cx="160" cy="270" rx="14" ry="7" fill="${shoeColor}"/>
+      <g class="bt-bridge">
+        <path d="M 85 265 L 90 230 L 100 200" stroke="url(#pantsG)" stroke-width="20" stroke-linecap="round" fill="none"/>
+        <path d="M 155 265 L 150 230 L 140 200" stroke="url(#pantsG)" stroke-width="20" stroke-linecap="round" fill="none"/>
+        <g class="bt-squeeze"><path d="M 80 200 Q 120 175 160 200 L 155 225 Q 120 208 85 225 Z" fill="url(#pantsG)"/></g>
+        <path d="M 75 220 Q 120 215 165 220 L 163 240 Q 120 235 77 240 Z" fill="url(#topG)"/>
+        <ellipse cx="75" cy="230" rx="20" ry="18" fill="url(#faceG)"/>
+        <path d="M 60 222 Q 65 210 78 208 Q 88 210 90 222" fill="${hairColor}"/>
+        <circle cx="70" cy="228" r="2.5" fill="#333"/>
+        <circle cx="80" cy="228" r="2.5" fill="#333"/>
+        <path d="M 85 230 L 65 240 L 55 245" stroke="url(#skinG)" stroke-width="11" stroke-linecap="round" fill="none"/>
+        <path d="M 155 230 L 175 240 L 185 245" stroke="url(#skinG)" stroke-width="11" stroke-linecap="round" fill="none"/>
+        <circle cx="53" cy="247" r="7" fill="url(#skinG)"/>
+        <circle cx="187" cy="247" r="7" fill="url(#skinG)"/>
+      </g></svg>`
+  };
+  return svgMap[animType] || svgMap.squat;
+}
+
+// ============ VOICE SYNTHESIS (with queue) ============
+function speak(text, priority = false, onEnd = null) {
+  if (!AppState.voiceEnabled || !AppState.voiceSynth) {
+    if (onEnd) setTimeout(onEnd, 100);
+    return;
+  }
+  
+  if (priority) {
+    AppState.voiceSynth.cancel();
+    AppState.voiceQueue = [];
+  }
+  
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = AppState.voiceSpeed;
+  utterance.pitch = 1.1;
+  utterance.volume = 1;
+  
+  const voices = AppState.voiceSynth.getVoices();
+  const fv = voices.find(v => v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('samantha') || v.name.toLowerCase().includes('google uk english female'));
+  if (fv) utterance.voice = fv;
+  
+  utterance.onend = () => {
+    AppState.isSpeaking = false;
+    processVoiceQueue();
+    if (onEnd) onEnd();
+  };
+  
+  AppState.voiceQueue.push(utterance);
+  if (!AppState.isSpeaking) processVoiceQueue();
+}
+
+function processVoiceQueue() {
+  if (AppState.voiceQueue.length === 0) {
+    AppState.isSpeaking = false;
+    return;
+  }
+  AppState.isSpeaking = true;
+  const next = AppState.voiceQueue.shift();
+  AppState.voiceSynth.speak(next);
+}
+
+function speakCoachMessage(key) {
+  const c = Coaches[AppState.selectedCoach];
+  if (c && c.messages[key]) speak(c.messages[key], true);
+}
+
+function speakExerciseInstructions(ex) {
+  const instr = ExerciseInstructions[ex.type] || ExerciseInstructions.squat;
+  const coach = Coaches[AppState.selectedCoach];
+  
+  // Clear queue and speak instructions
+  const fullText = `${coach.name} here. ${ex.name}. ${instr.bodyPosition} ${instr.tips}`;
+  speak(fullText, true);
+}
+
+function speakRestInstructions(ex) {
+  const instr = ExerciseInstructions[ex.type] || ExerciseInstructions.squat;
+  speak(instr.rest, true);
+}
+
+function testVoice() {
+  const c = Coaches[AppState.selectedCoach];
+  speak(`Hi! I'm ${c.name}, your fitness coach. Let's have a great workout!`, true);
+}
+
+function toggleVoice() {
+  AppState.voiceEnabled = !AppState.voiceEnabled;
+  document.getElementById('voiceToggle').classList.toggle('on');
+  if (!AppState.voiceEnabled && AppState.voiceSynth) AppState.voiceSynth.cancel();
+}
+
+function updateVoiceSpeed() {
+  AppState.voiceSpeed = parseFloat(document.getElementById('voiceSpeed').value);
+}
+
+function selectCoach(id) {
+  AppState.selectedCoach = id;
+  document.querySelectorAll('.coach-option').forEach(el => {
+    el.classList.remove('selected');
+    if (el.dataset.coach === id) el.classList.add('selected');
+  });
+  vibrate();
+  speak(`Coach ${Coaches[id].name} selected!`, true);
+}
+
+// ============ SCREEN NAVIGATION ============
+function switchScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active-screen'); s.classList.add('hidden-screen'); });
+  const t = document.getElementById(id);
+  if (t) { t.classList.remove('hidden-screen'); t.classList.add('active-screen'); }
+  document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('active'); if (n.dataset.screen === id) n.classList.add('active'); });
+  AppState.currentScreen = id;
+  if (id === 'screen-progress') { setTimeout(initWeightChart, 200); setTimeout(animateBMI, 400); renderWorkoutHistory(); }
+  if (id === 'screen-plan') renderWeekCards();
+}
+
+// ============ SPLASH CAROUSEL ============
+let currentSplash = 0;
+const totalSlides = 4;
+
+function goToSlide(idx) {
+  const slides = document.querySelectorAll('.splash-slide');
+  const dots = document.querySelectorAll('.splash-dot');
+  slides.forEach((s, i) => {
+    s.classList.remove('active', 'prev');
+    if (i === idx) s.classList.add('active');
+    else if (i < idx) s.classList.add('prev');
+  });
+  dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+  currentSplash = idx;
+  updateSplashButton();
+}
+
+function nextSplash() {
+  if (currentSplash < totalSlides - 1) goToSlide(currentSplash + 1);
+  else skipSplash();
+}
+
+function skipSplash() {
+  const carousel = document.getElementById('splashCarousel');
+  carousel.classList.add('hidden');
+}
+
+function updateSplashButton() {
+  const btn = document.getElementById('splashNextBtn');
+  if (currentSplash === totalSlides - 1) btn.textContent = 'Get Started';
+  else btn.textContent = 'Next';
+}
+
+let touchStartX = 0;
+document.addEventListener('DOMContentLoaded', () => {
+  const slides = document.getElementById('splashSlides');
+  if (slides) {
+    slides.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, {passive: true});
+    slides.addEventListener('touchend', e => {
+      const diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) {
+        if (diff > 0 && currentSplash < totalSlides - 1) goToSlide(currentSplash + 1);
+        else if (diff < 0 && currentSplash > 0) goToSlide(currentSplash - 1);
+      }
+    }, {passive: true});
+  }
+  
+  // Calculate plan start date
+  AppState.planStartDate = new Date();
+  AppState.planStartDate.setDate(AppState.planStartDate.getDate() - AppConfig.START_DATE_OFFSET);
+  
+  updateTodayDateBadge();
+  renderWeeklyBars();
+  renderWorkoutHistory();
+  renderWeekCards();
+  updatePlanProgress();
+  
+  if (AppState.voiceSynth) {
+    AppState.voiceSynth.getVoices();
+    AppState.voiceSynth.onvoiceschanged = () => { AppState.voiceSynth.getVoices(); };
+  }
+});
+
+function updateTodayDateBadge() {
+  const today = new Date();
+  const dayNum = AppState.currentDay;
+  const options = { month: 'short', day: 'numeric' };
+  const dateStr = today.toLocaleDateString('en-US', options);
+  document.getElementById('todayDateBadge').textContent = `Day ${dayNum} of 30 • ${dateStr}`;
+}
+
+// ============ ACCURATE WEEK ROSTER WITH REAL DATES ============
+function getDayDate(dayNumber) {
+  const date = new Date(AppState.planStartDate);
+  date.setDate(date.getDate() + (dayNumber - 1));
+  return date;
+}
+
+function formatDateShort(date) {
+  const options = { month: 'short', day: 'numeric' };
+  return date.toLocaleDateString('en-US', options);
+}
+
+function formatDateFull(date) {
+  const options = { weekday: 'short', month: 'short', day: 'numeric' };
+  return date.toLocaleDateString('en-US', options);
+}
+
+function isToday(date) {
+  const today = new Date();
+  return date.toDateString() === today.toDateString();
+}
+
+function renderWeekCards() {
+  const container = document.getElementById('weekCards');
+  if (container.children.length > 0) return;
+  
+  const weeks = [
+    { num: 1, days: [1,2,3,4,5,6,7], color: 'from-pink-400 to-pink-500' },
+    { num: 2, days: [8,9,10,11,12,13,14], color: 'from-pink-300 to-pink-400' },
+    { num: 3, days: [15,16,17,18,19,20,21], color: 'from-pink-200 to-pink-300' },
+    { num: 4, days: [22,23,24,25,26,27,28], color: 'from-pink-100 to-pink-200' },
+  ];
+  
+  container.innerHTML = weeks.map(week => {
+    const weekStartDate = getDayDate(week.days[0]);
+    const weekEndDate = getDayDate(week.days[week.days.length - 1]);
+    const weekDateRange = `${formatDateShort(weekStartDate)} - ${formatDateShort(weekEndDate)}`;
+    
+    return `
+    <div class="bg-gradient-to-r ${week.color} rounded-3xl p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-white font-bold text-lg">Week ${week.num} ${week.num < 4 ? '✓' : '(Current)'}</h3>
+        <span class="date-badge">${weekDateRange}</span>
+      </div>
+      <div class="grid grid-cols-7 gap-2">
+        ${week.days.map(day => {
+          const dayDate = getDayDate(day);
+          const isCompleted = AppState.completedDays.includes(day);
+          const isTodayDay = isToday(dayDate);
+          const dayName = dayDate.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
+          const dayNum = dayDate.getDate();
+          
+          return `<div class="day-card ${isCompleted ? 'completed' : ''} ${isTodayDay ? 'today' : ''}" onclick="toggleDay(this, ${day})">
+            <div class="text-xs ${isCompleted ? 'text-white/80' : 'text-pink-400'}">${dayName}</div>
+            <div class="day-num text-sm font-bold ${isCompleted ? 'text-white' : (isTodayDay ? 'text-pink-500' : 'text-pink-300')}">${isCompleted ? '✓' : dayNum}</div>
+            <div class="text-[9px] ${isCompleted ? 'text-white/70' : 'text-pink-300'} mt-0.5">${dayNum}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderWeeklyBars() {
+  const container = document.getElementById('weeklyBars');
+  const today = new Date();
+  const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const dayOfWeek = today.getDay(); // 0=Sun, 1=Mon...
+  
+  // Calculate this week's Monday
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
+  
+  container.innerHTML = days.map((d, i) => {
+    const dayDate = new Date(monday);
+    dayDate.setDate(monday.getDate() + i);
+    const isToday = dayDate.toDateString() === today.toDateString();
+    const heights = [60, 80, 45, 90, 70, 55, 100];
+    const height = heights[i];
+    
+    return `<div class="flex flex-col items-center gap-1 flex-1">
+      <div class="w-full ${isToday ? 'bg-gradient-to-t from-pink-500 to-pink-400' : `bg-pink-${200 + (i * 20)}`} rounded-t-lg week-bar relative" style="height: ${height}%">
+        ${isToday ? '<div class="absolute -top-5 left-1/2 -translate-x-1/2 text-xs font-bold text-pink-500">Now</div>' : ''}
+      </div>
+      <span class="text-xs ${isToday ? 'font-bold text-pink-500' : 'text-gray-400'}">${d}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleDay(el, day) {
+  if (AppState.completedDays.includes(day)) {
+    AppState.completedDays = AppState.completedDays.filter(d => d !== day);
+    el.classList.remove('completed');
+    const num = el.querySelector('.day-num');
+    const dayDate = getDayDate(day);
+    num.textContent = dayDate.getDate();
+    num.className = 'day-num text-sm font-bold ' + (isToday(dayDate) ? 'text-pink-500' : 'text-pink-300');
+  } else {
+    AppState.completedDays.push(day);
+    el.classList.add('completed');
+    const num = el.querySelector('.day-num');
+    num.textContent = '✓';
+    num.className = 'day-num text-sm font-bold text-white';
+    num.style.animation = 'checkPop 0.4s ease';
+    vibrate();
+  }
+  updatePlanProgress();
+}
+
+function updatePlanProgress() {
+  const completed = AppState.completedDays.length;
+  const pct = Math.min(100, (completed / 30) * 100);
+  document.getElementById('progressText').textContent = `${completed}/30 days`;
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+// ============ WORKOUT MODAL ============
+function showWorkoutDetail(workoutId) {
+  const data = Workouts[workoutId];
+  if (!data) return;
+  const modal = document.getElementById('workoutModal');
+  const body = document.getElementById('modalBody');
+  body.innerHTML = `
+    <h2 class="text-2xl font-bold text-gray-900 mb-2">${data.name}</h2>
+    <div class="flex gap-2 mb-4 flex-wrap">
+      <div class="bg-pink-50 px-3 py-1.5 rounded-full text-sm font-medium text-pink-600 flex items-center gap-1"><span class="material-icons text-base">schedule</span> ${data.duration} min</div>
+      <div class="bg-orange-50 px-3 py-1.5 rounded-full text-sm font-medium text-orange-600 flex items-center gap-1"><span class="material-icons text-base">local_fire_department</span> ${data.calories} kcal</div>
+      <div class="bg-purple-50 px-3 py-1.5 rounded-full text-sm font-medium text-purple-600 flex items-center gap-1"><span class="material-icons text-base">fitness_center</span> ${data.exercises.length} exercises</div>
+    </div>
+    <h3 class="font-bold text-gray-900 mb-3">Exercises with Instructions</h3>
+    <div class="space-y-3 mb-6">
+      ${data.exercises.map((ex, i) => {
+        const instr = ExerciseInstructions[ex.type] || ExerciseInstructions.squat;
+        return `<div class="bg-gray-50 rounded-2xl p-3">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0"><span class="material-icons text-pink-600 text-xl">${ex.icon}</span></div>
+            <div class="flex-1 min-w-0"><div class="font-semibold text-gray-900 text-sm">${ex.name}</div><div class="text-xs text-gray-500">${ex.isTimer ? ex.reps + ' sec' : ex.reps + ' reps'} • ${ex.muscle}</div></div>
+          </div>
+          <div class="text-xs text-gray-700 mb-1"><strong>Body Position:</strong> ${instr.bodyPosition}</div>
+          <div class="text-xs text-gray-600 mb-2"><strong>How to:</strong> ${instr.steps[0]}</div>
+          <div class="text-xs text-pink-600"><strong> Tip:</strong> ${instr.tips}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <button class="w-full py-4 bg-gradient-to-r from-pink-500 to-pink-600 text-white font-bold text-lg rounded-2xl shadow-lg shadow-pink-300/50 active:scale-95 transition-transform flex items-center justify-center gap-2" onclick="startWorkout('${workoutId}')">
+      <span class="material-icons">play_arrow</span> Start Workout
+    </button>`;
+  modal.classList.add('show');
+}
+function closeWorkoutModal(e) { if (e.target === document.getElementById('workoutModal')) document.getElementById('workoutModal').classList.remove('show'); }
+
+// ============ START WORKOUT ============
+function startWorkout(workoutId) {
+  document.getElementById('workoutModal').classList.remove('show');
+  const data = Workouts[workoutId];
+  if (!data) return;
+  AppState.activeWorkout = data;
+  AppState.currentExerciseIndex = 0;
+  AppState.reps = 0;
+  AppState.workoutTimer = 0;
+  AppState.caloriesBurned = 0;
+  AppState.isPaused = false;
+  document.getElementById('workoutOverlay').classList.add('show');
+  document.getElementById('bottomNav').style.display = 'none';
+  showCountdown(3, () => {
+    startWorkoutTimer();
+    renderActiveExercise();
+    // Coach reads instructions for first exercise
+    setTimeout(() => {
+      const ex = data.exercises[0];
+      speakExerciseInstructions(ex);
+    }, 500);
+  });
+}
+
+// ============ COUNTDOWN ============
+function showCountdown(seconds, callback) {
+  const content = document.getElementById('activeWorkoutContent');
+  let count = seconds;
+  content.innerHTML = `
+    <div class="flex-1 flex flex-col items-center justify-center text-white px-6">
+      <div class="w-32 h-32 rounded-full bg-gradient-to-br from-pink-400 to-pink-600 mb-6 flex items-center justify-center heartbeat shadow-2xl shadow-pink-500/50">
+        <span class="material-icons text-6xl text-white">fitness_center</span>
+      </div>
+      <h2 class="text-2xl font-bold mb-2">Get Ready!</h2>
+      <p class="text-white/60 mb-8 text-center">${AppState.activeWorkout.name}</p>
+      <div class="relative w-52 h-52">
+        <svg class="w-full h-full"><circle cx="104" cy="104" r="90" stroke="rgba(255,255,255,0.1)" stroke-width="10" fill="none"/><circle id="countdownRing" cx="104" cy="104" r="90" stroke="#FF4D8D" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="565" stroke-dashoffset="0" class="progress-ring"/></svg>
+        <div class="absolute inset-0 flex items-center justify-center"><div class="text-8xl font-bold" id="countdownNum" style="animation:scaleIn 0.5s ease">${count}</div></div>
+      </div>
+      <p class="text-white/50 text-sm mt-6">Workout starts in...</p>
+    </div>`;
+  const ring = document.getElementById('countdownRing');
+  const interval = setInterval(() => {
+    count--;
+    const numEl = document.getElementById('countdownNum');
+    if (numEl) { numEl.style.animation = 'none'; void numEl.offsetWidth; numEl.style.animation = 'scaleIn 0.4s ease'; numEl.textContent = count > 0 ? count : 'GO!'; if (count <= 0) numEl.style.color = '#FF4D8D'; }
+    if (ring) { const progress = ((seconds - Math.max(0, count)) / seconds) * 565; ring.style.strokeDashoffset = progress; }
+    if (count > 0 && count <= 3) speak(count.toString());
+    if (count === 0) speak("Go!");
+    if (count <= 0) { clearInterval(interval); setTimeout(callback, 400); }
+  }, 1000);
+}
+
+// ============ TIMERS ============
+function startWorkoutTimer() {
+  if (AppState.workoutInterval) clearInterval(AppState.workoutInterval);
+  AppState.workoutInterval = setInterval(() => {
+    if (!AppState.isPaused) { AppState.workoutTimer++; updateWorkoutTimerDisplay(); }
+  }, 1000);
+}
+
+function updateWorkoutTimerDisplay() {
+  const el = document.getElementById('workoutTimerDisplay');
+  if (el) { const m = Math.floor(AppState.workoutTimer / 60); const s = AppState.workoutTimer % 60; el.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`; }
+}
+
+function startExerciseTimer() {
+  if (AppState.exerciseTimerInterval) clearInterval(AppState.exerciseTimerInterval);
+  AppState.exerciseTimeLeft = AppConfig.EXERCISE_DURATION;
+  updateExerciseTimerDisplay();
+  AppState.exerciseTimerInterval = setInterval(() => {
+    if (!AppState.isPaused) {
+      AppState.exerciseTimeLeft--;
+      updateExerciseTimerDisplay();
+      if (AppState.exerciseTimeLeft === 5) speak("5 seconds left");
+      if (AppState.exerciseTimeLeft === 3) speak("3");
+      if (AppState.exerciseTimeLeft === 2) speak("2");
+      if (AppState.exerciseTimeLeft === 1) speak("1");
+      if (AppState.exerciseTimeLeft <= 0) {
+        clearInterval(AppState.exerciseTimerInterval);
+        AppState.caloriesBurned += AppConfig.CALORIES_PER_EXERCISE;
+        advanceToNextExercise();
+      }
+    }
+  }, 1000);
+}
+
+function updateExerciseTimerDisplay() {
+  const el = document.getElementById('exerciseTimerBig');
+  const ring = document.getElementById('exerciseTimerRing');
+  if (el) {
+    el.textContent = AppState.exerciseTimeLeft;
+    if (AppState.exerciseTimeLeft <= 5) el.style.color = '#FF4D8D';
+    else el.style.color = 'white';
+  }
+  if (ring) {
+    const totalDash = 628;
+    const progress = ((30 - AppState.exerciseTimeLeft) / 30) * totalDash;
+    ring.style.strokeDashoffset = progress;
+  }
+}
+
+function advanceToNextExercise() {
+  vibrate();
+  if (AppState.currentExerciseIndex < AppState.activeWorkout.exercises.length - 1) {
+    AppState.currentExerciseIndex++;
+    AppState.reps = 0;
+    speak("Great job! Next exercise!");
+    setTimeout(() => {
+      renderActiveExercise();
+      const ex = AppState.activeWorkout.exercises[AppState.currentExerciseIndex];
+      setTimeout(() => speakExerciseInstructions(ex), 300);
+      startExerciseTimer();
+    }, 500);
+  } else {
+    completeWorkout();
+  }
+}
+
+// ============ RENDER ACTIVE EXERCISE ============
+function renderActiveExercise() {
+  const data = AppState.activeWorkout;
+  const ex = data.exercises[AppState.currentExerciseIndex];
+  const content = document.getElementById('activeWorkoutContent');
+  const totalExercises = data.exercises.length;
+  const progress = ((AppState.currentExerciseIndex) / totalExercises) * 100;
+  AppState.reps = 0;
+
+  const coach = Coaches[AppState.selectedCoach];
+  const coachSVG = getRealisticCoachSVG(ex.type || ex.anim);
+  const animClass = `anim-${ex.anim}`;
+  const instr = ExerciseInstructions[ex.type] || ExerciseInstructions.squat;
+
+  content.innerHTML = `
+    <div class="px-5 pt-4 pb-2">
+      <div class="flex items-center justify-between mb-3">
+        <button onclick="togglePause()" class="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center active:scale-90 transition" id="pauseBtn">
+          <span class="material-icons text-white text-xl">pause</span>
+        </button>
+        <div class="text-white/90 text-sm font-medium timer-display bg-white/10 px-3 py-1 rounded-full flex items-center gap-1" id="workoutTimerDisplay">
+          <span class="material-icons text-base">schedule</span> 00:00
+        </div>
+        <button onclick="quitWorkout()" class="cancel-btn w-10 h-10 rounded-full bg-red-500/30 backdrop-blur flex items-center justify-center active:scale-90 transition border border-red-400/50">
+          <span class="material-icons text-white text-xl">close</span>
+        </button>
+      </div>
+      <div class="h-1.5 bg-white/10 rounded-full overflow-hidden">
+        <div class="h-full bg-gradient-to-r from-pink-400 to-pink-600 rounded-full transition-all duration-500" style="width: ${progress}%"></div>
+      </div>
+      <div class="flex justify-between text-xs text-white/60 mt-1.5">
+        <span>Exercise ${AppState.currentExerciseIndex + 1} of ${totalExercises}</span>
+        <span>${AppConfig.EXERCISE_DURATION} sec each</span>
+      </div>
+    </div>
+
+    <div class="flex-1 flex flex-col items-center px-4 exercise-enter overflow-y-auto pb-4">
+      <div class="speech-bubble mb-3 animate-in w-full">
+        <div class="flex items-start gap-2">
+          <img src="${coach.portrait}" class="w-8 h-8 rounded-full object-cover flex-shrink-0" alt="${coach.name}">
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-bold text-pink-600">${coach.name} says:</div>
+            <div class="text-sm text-gray-700">${instr.bodyPosition}</div>
+          </div>
+          ${AppState.voiceEnabled ? `<div class="voice-indicator flex-shrink-0"><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div></div>` : ''}
+        </div>
+      </div>
+
+      <h2 class="text-2xl font-bold text-white mb-1 text-center">${ex.name}</h2>
+      <p class="text-white/60 text-xs mb-3 text-center">${instr.muscles}</p>
+
+      <div class="relative mb-3">
+        <div class="coach-glow"></div>
+        <div class="coach-stage-3d ${animClass}">
+          ${coachSVG}
+          <div class="coach-floor"></div>
+        </div>
+        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-gray-700 flex items-center gap-1">
+          <span class="material-icons text-base text-pink-500">person</span> Coach ${coach.name}
+        </div>
+      </div>
+
+      <div class="relative w-56 h-56 mx-auto mb-3">
+        <svg class="w-full h-full">
+          <circle cx="112" cy="112" r="100" stroke="rgba(255,255,255,0.1)" stroke-width="12" fill="none"/>
+          <circle id="exerciseTimerRing" cx="112" cy="112" r="100" stroke="#FF4D8D" stroke-width="12" fill="none" stroke-linecap="round" stroke-dasharray="628" stroke-dashoffset="0" class="progress-ring"/>
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center">
+          <div class="text-xs text-white/60 mb-1">TIME LEFT</div>
+          <div class="text-7xl font-extrabold timer-big text-white" id="exerciseTimerBig">30</div>
+          <div class="text-sm text-white/60 mt-1">seconds</div>
+        </div>
+      </div>
+
+      <div class="w-full bg-white/10 backdrop-blur rounded-2xl p-3 mb-3">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="material-icons text-pink-400 text-lg">info</span>
+          <span class="text-white font-bold text-sm">How to perform</span>
+        </div>
+        <div class="max-h-36 overflow-y-auto scrollbar-hide">
+          ${instr.steps.map((step, i) => `<div class="instruction-step"><div class="step-num">${i+1}</div><div class="step-text">${step}</div></div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="px-6 pb-8">
+      <div class="flex gap-3">
+        <button onclick="prevExercise()" class="flex-1 py-3.5 bg-white/10 backdrop-blur text-white font-semibold rounded-2xl active:scale-95 transition-transform text-sm flex items-center justify-center gap-1">
+          <span class="material-icons text-base">skip_previous</span> Previous
+        </button>
+        <button onclick="nextExercise()" class="flex-1 py-3.5 bg-gradient-to-r from-pink-500 to-pink-600 text-white font-bold rounded-2xl active:scale-95 transition-transform shadow-lg shadow-pink-500/30 text-sm flex items-center justify-center gap-1">
+          Next <span class="material-icons text-base">skip_next</span>
+        </button>
+      </div>
+    </div>`;
+}
+
+function nextExercise() {
+  if (AppState.currentExerciseIndex < AppState.activeWorkout.exercises.length - 1) {
+    AppState.currentExerciseIndex++;
+    AppState.reps = 0;
+    renderActiveExercise();
+    const ex = AppState.activeWorkout.exercises[AppState.currentExerciseIndex];
+    setTimeout(() => speakExerciseInstructions(ex), 300);
+    startExerciseTimer();
+  } else { completeWorkout(); }
+}
+function prevExercise() {
+  if (AppState.currentExerciseIndex > 0) {
+    AppState.currentExerciseIndex--;
+    AppState.reps = 0;
+    renderActiveExercise();
+    const ex = AppState.activeWorkout.exercises[AppState.currentExerciseIndex];
+    setTimeout(() => speakExerciseInstructions(ex), 300);
+    startExerciseTimer();
+  }
+}
+
+function togglePause() {
+  AppState.isPaused = !AppState.isPaused;
+  const btn = document.getElementById('pauseBtn');
+  if (AppState.isPaused) { btn.innerHTML = '<span class="material-icons text-white text-xl">play_arrow</span>'; speak("Workout paused", true); }
+  else { btn.innerHTML = '<span class="material-icons text-white text-xl">pause</span>'; speak("Resuming", true); }
+}
+
+function quitWorkout() {
+  if (AppState.workoutInterval) { clearInterval(AppState.workoutInterval); AppState.workoutInterval = null; }
+  if (AppState.exerciseTimerInterval) { clearInterval(AppState.exerciseTimerInterval); AppState.exerciseTimerInterval = null; }
+  if (AppState.voiceSynth) AppState.voiceSynth.cancel();
+  document.getElementById('workoutOverlay').classList.remove('show');
+  document.getElementById('bottomNav').style.display = 'flex';
+  AppState.activeWorkout = null; AppState.isPaused = false;
+  speak("Workout cancelled", true);
+  switchScreen('screen-home');
+}
+
+// ============ CELEBRATION WITH FLYING GIFTS ============
+function completeWorkout() {
+  if (AppState.workoutInterval) clearInterval(AppState.workoutInterval);
+  if (AppState.exerciseTimerInterval) clearInterval(AppState.exerciseTimerInterval);
+  if (AppState.voiceSynth) AppState.voiceSynth.cancel();
+  
+  const mins = Math.floor(AppState.workoutTimer / 60);
+  const secs = AppState.workoutTimer % 60;
+  const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
+  
+  AppState.totalWorkouts++;
+  AppState.totalCalories += AppState.caloriesBurned;
+  AppState.totalMinutes += Math.max(1, mins);
+  AppState.streak++;
+  
+  document.getElementById('totalWorkouts').textContent = AppState.totalWorkouts;
+  document.getElementById('totalCalories').textContent = AppState.totalCalories.toLocaleString();
+  document.getElementById('totalMinutes').textContent = AppState.totalMinutes;
+  document.getElementById('streakDisplay').textContent = AppState.streak + ' days';
+  document.getElementById('planStreak').textContent = AppState.streak + ' Day Streak';
+  
+  AppState.recentWorkouts.unshift({
+    name: AppState.activeWorkout.name,
+    date: 'Just now',
+    time: timeStr,
+    calories: AppState.caloriesBurned,
+    icon: 'celebration',
+    color: 'pink'
+  });
+  
+  if (!AppState.completedDays.includes(24)) { AppState.completedDays.push(24); updatePlanProgress(); }
+  
+  document.getElementById('workoutOverlay').classList.remove('show');
+  
+  // Show celebration
+  showCelebration(timeStr, AppState.caloriesBurned, AppState.streak);
+}
+
+function showCelebration(time, calories, streak) {
+  document.getElementById('celebTime').textContent = time;
+  document.getElementById('celebCal').textContent = calories;
+  document.getElementById('celebStreak').textContent = streak + '🔥';
+  
+  const overlay = document.getElementById('celebrationOverlay');
+  overlay.classList.add('show');
+  
+  // Launch confetti
+  launchConfetti();
+  
+  // Launch flying gifts
+  launchFlyingGifts();
+  
+  // Voice celebration
+  const coach = Coaches[AppState.selectedCoach];
+  setTimeout(() => {
+    speak(`Hurray! Congratulations! You completed the workout! Amazing work!`, true);
+  }, 500);
+}
+
+function launchFlyingGifts() {
+  const container = document.getElementById('flyingGiftsContainer');
+  container.innerHTML = '';
+  
+  const gifts = ['🎁', '🎀', '', '🎉', '🏆', '⭐', '💝', '', '🌟', '✨'];
+  const colors = ['#FF4D8D', '#FFD700', '#FF6B9D', '#4FC3F7', '#66BB6A', '#AB47BC'];
+  
+  // Create 25 flying gifts
+  for (let i = 0; i < 25; i++) {
+    setTimeout(() => {
+      const gift = document.createElement('div');
+      gift.className = 'flying-gift';
+      gift.textContent = gifts[Math.floor(Math.random() * gifts.length)];
+      
+      // Start from center
+      const startX = window.innerWidth / 2;
+      const startY = window.innerHeight / 2;
+      
+      // Random end position
+      const angle = (Math.PI * 2 * i) / 25;
+      const distance = 200 + Math.random() * 300;
+      const endX = startX + Math.cos(angle) * distance;
+      const endY = startY + Math.sin(angle) * distance - 200;
+      
+      gift.style.left = startX + 'px';
+      gift.style.top = startY + 'px';
+      gift.style.setProperty('--tx1', (Math.cos(angle) * 100) + 'px');
+      gift.style.setProperty('--ty1', (Math.sin(angle) * 100 - 100) + 'px');
+      gift.style.setProperty('--tx2', (endX - startX) + 'px');
+      gift.style.setProperty('--ty2', (endY - startY) + 'px');
+      gift.style.fontSize = (30 + Math.random() * 30) + 'px';
+      
+      container.appendChild(gift);
+      
+      setTimeout(() => gift.remove(), 2500);
+    }, i * 80);
+  }
+}
+
+function launchConfetti() {
+  const container = document.getElementById('confettiContainer');
+  container.innerHTML = '';
+  const colors = ['#FF4D8D', '#FF8A65', '#FFCA28', '#66BB6A', '#4FC3F7', '#AB47BC', '#FF6B9D', '#FFD700'];
+  for (let i = 0; i < 80; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + 'vw';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDuration = (2 + Math.random() * 2) + 's';
+    piece.style.animationDelay = Math.random() * 0.5 + 's';
+    piece.style.width = (6 + Math.random() * 8) + 'px';
+    piece.style.height = (6 + Math.random() * 8) + 'px';
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    container.appendChild(piece);
+  }
+  setTimeout(() => { container.innerHTML = ''; }, 4000);
+}
+
+function closeCelebration() {
+  document.getElementById('celebrationOverlay').classList.remove('show');
+  document.getElementById('flyingGiftsContainer').innerHTML = '';
+  document.getElementById('confettiContainer').innerHTML = '';
+  document.getElementById('bottomNav').style.display = 'flex';
+  AppState.activeWorkout = null;
+  switchScreen('screen-home');
+}
+
+// ============ FILTERS ============
+function filterCategory(el, category) {
+  el.parentElement.querySelectorAll('.tab-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  AppState.currentCategory = category;
+  applyFilters();
+}
+function filterWorkouts() { AppState.searchQuery = document.getElementById('searchInput').value.toLowerCase(); applyFilters(); }
+function applyFilters() {
+  document.querySelectorAll('.workout-card').forEach(card => {
+    const cat = card.dataset.category; const name = card.dataset.name || '';
+    const matchCat = AppState.currentCategory === 'all' || cat === AppState.currentCategory;
+    const matchSearch = !AppState.searchQuery || name.includes(AppState.searchQuery);
+    if (matchCat && matchSearch) { card.style.display = 'block'; card.style.animation = 'fadeInUp 0.4s ease'; }
+    else { card.style.display = 'none'; }
+  });
+}
+
+function addWater() {
+  if (AppState.waterGlasses < 8) {
+    AppState.waterGlasses++;
+    document.getElementById('waterCount').textContent = `${AppState.waterGlasses} / 8 glasses`;
+    document.getElementById('waterBar').style.width = (AppState.waterGlasses / 8 * 100) + '%';
+    vibrate();
+    if (AppState.waterGlasses === 8) setTimeout(() => alert('💧 Great job! You hit your water goal!'), 100);
+  }
+}
+
+function resetProgress() {
+  if (confirm('Reset all progress? This cannot be undone.')) {
+    AppState.streak = 0; AppState.totalWorkouts = 0; AppState.totalCalories = 0; AppState.totalMinutes = 0;
+    AppState.completedDays = []; AppState.waterGlasses = 0;
+    AppState.recentWorkouts = [];
+    document.getElementById('totalWorkouts').textContent = '0';
+    document.getElementById('totalCalories').textContent = '0';
+    document.getElementById('totalMinutes').textContent = '0';
+    document.getElementById('streakDisplay').textContent = '0 days';
+    document.getElementById('planStreak').textContent = '0 Day Streak';
+    document.getElementById('waterCount').textContent = '0 / 8 glasses';
+    document.getElementById('waterBar').style.width = '0%';
+    document.getElementById('progressText').textContent = '0/30 days';
+    document.getElementById('progressBar').style.width = '0%';
+    renderWorkoutHistory();
+    document.getElementById('weekCards').innerHTML = '';
+    renderWeekCards();
+    alert('Progress reset!');
+  }
+}
+
+function renderWorkoutHistory() {
+  const el = document.getElementById('workoutHistory');
+  if (!el) return;
+  if (AppState.recentWorkouts.length === 0) {
+    el.innerHTML = '<div class="text-center text-gray-400 text-sm py-8">No workouts yet. Start your first one!</div>';
+    return;
+  }
+  const colorMap = { pink: 'bg-pink-100 text-pink-500', purple: 'bg-purple-100 text-purple-500', orange: 'bg-orange-100 text-orange-500', blue: 'bg-blue-100 text-blue-500', indigo: 'bg-indigo-100 text-indigo-500' };
+  el.innerHTML = AppState.recentWorkouts.map(w => `
+    <div class="workout-item flex items-center gap-3 p-3 bg-gray-50 rounded-2xl">
+      <div class="w-12 h-12 rounded-2xl ${colorMap[w.color] || 'bg-pink-100 text-pink-500'} flex items-center justify-center"><span class="material-icons">${w.icon}</span></div>
+      <div class="flex-1"><div class="font-semibold text-sm text-gray-900">${w.name}</div><div class="text-xs text-gray-500">${w.date} • ${w.time}</div></div>
+      <div class="text-right"><div class="font-bold text-sm text-pink-500">${w.calories} kcal</div></div>
+    </div>`).join('');
+}
+
+let weightChartInstance = null;
+function initWeightChart() {
+  const ctx = document.getElementById('weightChart');
+  if (!ctx) return;
+  if (weightChartInstance) weightChartInstance.destroy();
+  const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 200);
+  gradient.addColorStop(0, 'rgba(255, 77, 141, 0.3)');
+  gradient.addColorStop(0.5, 'rgba(180, 130, 255, 0.2)');
+  gradient.addColorStop(1, 'rgba(100, 200, 255, 0.1)');
+  weightChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: { labels: ['1', '5', '10', '15', '20', '25', '30'], datasets: [{ data: [72, 70.5, 68.5, 66.8, 65.5, 64.2, 63.4], borderColor: '#FF4D8D', backgroundColor: gradient, borderWidth: 3, fill: true, tension: 0.4, pointBackgroundColor: ['#FF4D8D', '#fff', '#fff', '#fff', '#fff', '#fff', '#4FC3F7'], pointBorderColor: ['#FF4D8D', '#ddd', '#ddd', '#ddd', '#ddd', '#ddd', '#4FC3F7'], pointBorderWidth: 2, pointRadius: [6, 4, 4, 4, 4, 4, 6] }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { font: { family: 'Poppins', size: 10 }, color: '#999' } }, y: { min: 60, max: 74, grid: { color: '#f0f0f0' }, ticks: { font: { family: 'Poppins', size: 10 }, color: '#999', stepSize: 4 } } } }
+  });
+}
+
+function animateBMI() {
+  const needle = document.getElementById('bmiNeedle');
+  if (needle) { const bmi = 22.9; const rotation = -90 + ((bmi - 17) / (40 - 17)) * 180; needle.style.transform = `rotate(${rotation}deg)`; }
+}
+
+function updateClock() {
+  const now = new Date();
+  let hours = now.getHours();
+  const mins = now.getMinutes().toString().padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12 || 12;
+  document.getElementById('clockTime').textContent = `${hours}:${mins} ${ampm}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+function vibrate() { if (navigator.vibrate) { try { navigator.vibrate(30); } catch(e) {} } }
+</script>
+</body>
+</html>
